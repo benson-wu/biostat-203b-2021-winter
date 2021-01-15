@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Display machine information for reproducibility:
-```{r, eval=F}
+```{r, eval=T}
 sessionInfo()
 ```
 
@@ -19,17 +19,29 @@ sessionInfo()
 
 1. Apply for the [Student Developer Pack](https://education.github.com/pack) at GitHub using your UCLA email.
 
+**Solution**: Done. 
+
 2. Create a **private** repository `biostat-203b-2021-winter` and add `Hua-Zhou`, `Chris-German` and `ElvisCuiHan` as your collaborators with write permission.
+
+**Solution**: Done. 
 
 3. Top directories of the repository should be `hw1`, `hw2`, ... Maintain two branches `master` and `develop`. The `develop` branch will be your main playground, the place where you develop solution (code) to homework problems and write up report. The `master` branch will be your presentation area. Submit your homework files (R markdown file `Rmd`, `html` file converted from R markdown, all code and data sets to reproduce results) in `master` branch.
 
+**Solution**: Done. 
+
 4. After each homework due date, teaching assistant and instructor will check out your master branch for grading. Tag each of your homework submissions with tag names `hw1`, `hw2`, ... Tagging time will be used as your submission time. That means if you tag your `hw1` submission after deadline, penalty points will be deducted for late submission.
 
+**Solution**: Done. 
+
 5. After this course, you can make this repository public and use it to demonstrate your skill sets on job market.
+
+**Solution**: Sounds good. 
 
 ## Q2. Linux Shell Commands
 
 1. This exercise (and later in this course) uses the [MIMIC-IV data](https://mimic-iv.mit.edu), a freely accessible critical care database developed by the MIT Lab for Computational Physiology. Follow the instructions at <https://mimic-iv.mit.edu/docs/access/> to (1) complete the CITI `Data or Specimens Only Research` course and (2) obtain the PhysioNet credential for using the MIMIC-IV data. Display the verification links to your completion report and completion certificate here. (Hint: The CITI training takes a couple hours and the PhysioNet credentialing takes a couple days; do not leave it to the last minute.)
+
+**Solution**: Completed and received PhysioNet credential to use MIMIC-IV data. Here is my [course completion report](https://www.citiprogram.org/verify/?k7d62b2a6-a528-4c9f-b08e-3b27874318b8-40352501) and [course completion certificate](https://www.citiprogram.org/verify/?w57643131-f682-4a30-bff8-0794fe0eacf7-40352501)
 
 2. The `/usr/203b-data/mimic-iv/` folder on teaching server contains data sets from MIMIC-IV. Refer to <https://mimic-iv.mit.edu/docs/datasets/> for details of data files.  
     ```{bash}
@@ -37,9 +49,13 @@ sessionInfo()
     ```
 Please, do **not** put these data files into Git; they are big. Do **not** copy them into your directory. Do **not** decompress the gz data files. These create unnecessary big files on storage and are not big data friendly practices. Just read from the data folder `/usr/203b-data/mimic-iv` directly in following exercises. 
 
+**Solution**: Okay, will do.
+
     Use Bash commands to answer following questions.
 
 3. Display the contents in the folders `core`, `hosp`, `icu`. What are the functionalities of the bash commands `zcat`, `zless`, `zmore`, and `zgrep`? 
+
+**Solution**
 
 4. What's the output of following bash script?
     ```{bash, eval=F}
@@ -85,3 +101,52 @@ Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this sh
 ### Q4. More fun with Linux
 
 Try these commands in Bash and interpret the results: `cal`, `cal 2021`, `cal 9 1752` (anything unusual?), `date`, `hostname`, `arch`, `uname -a`, `uptime`, `who am i`, `who`, `w`, `id`, `last | head`, `echo {con,pre}{sent,fer}{s,ed}`, `time sleep 5`, `history | tail`.
+
+**Solution**
+```{bash}
+cal
+```
+`cal` shows the calendar of the current month with the current date highlighted
+
+```{bash}
+cal 2021
+```
+
+`cal 2021`: shows the calendar of 2021 year with the current date highlighted
+
+
+```{bash}
+cal 9 1752
+```
+
+`cal 9 1752`: shows the calendar for September 1752, but the 3rd-13th are missing from the calendar!
+
+```{bash}
+date
+```
+
+`date`: gives the current day of the week, date, coordinated universal time, and year
+
+```{bash}
+hostname
+```
+
+`hostname`: gives the domain name system. In this case it is "ucla-biostat-203b"
+
+```{bash}
+arch
+```
+`arch`: this prints the architecure of the machine. 
+
+```{bash}
+uname -a
+```
+
+`uname -a`: this prints informartion about the operating system and machine hardware. 
+
+```{bash}
+uptime
+```
+
+`uptime`: This gives the current running time, 
+`who am i`, `who`, `w`, `id`, `last | head`, `echo {con,pre}{sent,fer}{s,ed}`, `time sleep 5`, `history | tail`.
