@@ -55,6 +55,23 @@ Please, do **not** put these data files into Git; they are big. Do **not** copy 
 
 3. Display the contents in the folders `core`, `hosp`, `icu`. What are the functionalities of the bash commands `zcat`, `zless`, `zmore`, and `zgrep`? 
 
+**Solutions** 
+```{bash}
+ls -al /usr/203b-data/mimic-iv/core
+```
+
+```{bash}
+ls -al /usr/203b-data/mimic-iv/hosp
+```
+
+```{bash}
+ls -al /usr/203b-data/mimic-iv/icu
+```
+
+`zcat`: Displays the contents of a compressed files
+`zless`: `zmore`, and 
+`zgrep`: Search the compressed file
+
 **Solution**
 
 4. What's the output of following bash script?
