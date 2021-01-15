@@ -55,7 +55,7 @@ Please, do **not** put these data files into Git; they are big. Do **not** copy 
 
 3. Display the contents in the folders `core`, `hosp`, `icu`. What are the functionalities of the bash commands `zcat`, `zless`, `zmore`, and `zgrep`? 
 
-**Solutions** 
+**Solution** 
 ```{bash}
 ls -al /usr/203b-data/mimic-iv/core
 ```
@@ -69,10 +69,11 @@ ls -al /usr/203b-data/mimic-iv/icu
 ```
 
 `zcat`: Displays the contents of a compressed files
-`zless`: `zmore`, and 
+`zless`: 
+`zmore`:
 `zgrep`: Search the compressed file
 
-**Solution**
+
 
 4. What's the output of following bash script?
     ```{bash, eval=F}
@@ -83,24 +84,56 @@ ls -al /usr/203b-data/mimic-iv/icu
     ```
 Display the number of lines in each data file using a similar loop.
 
-4. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, `language`, `marital_status`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq`, `wc`, and so on.)
+**Solution**
+The bashscript loops through all the documents that have the .gz extension in the /usr/203b-data/mimic-iv/core/ directory and gives a detailed contents of each item with the .gz extension. 
+
+```{bash, eval=F}
+for datafile in /usr/203b-data/mimic-iv/core/*.gz
+  do
+    awk 'END { print NR }' $datafile
+  done
+```
+This loop lists the number of lines in each data file. 
+
+
+5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, `language`, `marital_status`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq`, `wc`, and so on.)
+
+**Solution**
+
+Print first few lines of admissions.csv.gz
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | head -n 5
+```
+
+```{bash}
+awk 'END { print NR }' /usr/203b-data/mimic-iv/core/admissions.csv.gz 
+```
+
+There are 65081 rows including the header. 
+
+```{bash}
+
+```
+
+How many unique patients (identified by `subject_id`) are in this data file?
 
 ## Q3. Who's popular in Price and Prejudice
 
 1. You and your friend just have finished reading *Pride and Prejudice* by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <http://www.gutenberg.org/cache/epub/42671/pg42671.txt> and save to your local folder. 
     ```{bash, eval=FALSE}
-    curl http://www.gutenberg.org/cache/epub/42671/pg42671.txt > pride_and_prejudice.txt
+    curl http://www.gutenberg.org/cache/epub/42671/pg42671.txt > /home/buwenson/Data/pride_and_prejudice.txt
     ```
 Do **not** put this text file `pride_and_prejudice.txt` in Git. Using a `for` loop, how would you tabulate the number of times each of the four characters is mentioned?
 
 2. What's the difference between the following two commands?
-    ```{bash eval=FALSE}
+    ```{bash}
     echo 'hello, world' > test1.txt
     ```
     and
-    ```{bash eval=FALSE}
+    ```{bash}
     echo 'hello, world' >> test2.txt
     ```
+The first one directs the output to test1.txt and will overwrite the file if it already exists. The second one directs the output to test2.txt and will append the output if the file exists already. 
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
     ```{bash eval=FALSE}
