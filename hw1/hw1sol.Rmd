@@ -148,5 +148,58 @@ uname -a
 uptime
 ```
 
-`uptime`: This gives the current running time, 
-`who am i`, `who`, `w`, `id`, `last | head`, `echo {con,pre}{sent,fer}{s,ed}`, `time sleep 5`, `history | tail`.
+`uptime`: This gives the current time, how many users are on the server, and load average in the last 1, 5, and 15 minutes 
+
+```{bash}
+who am i
+```
+
+`who am i`: This returns nothing, but the following works
+
+```{bash}
+whoami
+```
+
+`whoami`: returns username of curent user
+
+```{bash}
+who
+```
+
+`who`: returns the usernames of users who are on the server, their terminal, log-in time, and what host they're using the server from.
+
+```{bash}
+w
+```
+
+`w`: Header contains same information that `uptime` returns. Below the header contains the usernames of users who are on the server, their terminal type, host name, login time, idle time, JCPU time, PCPU time, and what type of command line they are using. 
+
+```{bash}
+id
+```
+
+`id`: Returns user ID, group ID, supplemental group ID, and the security context (https://linuxize.com/post/id-command-in-linux/)
+
+```{bash}
+last | head
+```
+
+`last | head`: show the head (first 10 entries by default) of the usernames of the users who logged in to the server, the terminal type, IP address, the date and time of log in, and the duration of the time that they were logged in. 
+
+```{bash}
+echo {con,pre}{sent,fer}{s,ed}
+```
+
+
+`echo {con,pre}{sent,fer}{s,ed}`: Displays the combination of the three sets of letters (maintaining the order of the sets though)
+
+```{bash}
+time sleep 5
+```
+`time sleep 5`: gives the amount of time that it takes to run `sleep 5`, which says to delay execution of a script for 5 seconds, so expectedly it the real time displayed is ~5 seconds. 
+
+```{bash}
+history | tail
+```
+
+`history | tail`: Gives you the tail (last 10 by default) commands that you ran 
