@@ -114,19 +114,36 @@ awk 'END { print NR }' /usr/203b-data/mimic-iv/core/admissions.csv.gz
 
 There are 65081 rows including the header. 
 
+
+
+How many unique patients (identified by `subject_id`) are in this data file?
+
 ```{bash}
 
 ```
-
-How many unique patients (identified by `subject_id`) are in this data file?
 
 ## Q3. Who's popular in Price and Prejudice
 
 1. You and your friend just have finished reading *Pride and Prejudice* by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <http://www.gutenberg.org/cache/epub/42671/pg42671.txt> and save to your local folder. 
     ```{bash, eval=FALSE}
-    curl http://www.gutenberg.org/cache/epub/42671/pg42671.txt > /home/buwenson/Data/pride_and_prejudice.txt
+    curl http://www.gutenberg.org/cache/epub/42671/pg42671.txt > /home/buwenson/biostat-203b-2021-winter/hw1/pride_and_prejudice.txt
     ```
 Do **not** put this text file `pride_and_prejudice.txt` in Git. Using a `for` loop, how would you tabulate the number of times each of the four characters is mentioned?
+
+**Solution**
+Reference for looping technique: https://linuxhint.com/bash_loop_list_strings/
+
+# Iterate the string array using for loop
+```{bash}
+declare -a StringArray=("Elizabeth" "Jane" "Lydia" "Darcy")
+for var in "${StringArray[@]}" 
+  do
+    grep -o $var pride_and_prejudice.txt | wc -l
+  done
+```
+
+Elizabeth shows up 634 times. Jane shows up 294 times. Lydia shows up 170 times. Darcy shows up 417 times. 
+
 
 2. What's the difference between the following two commands?
     ```{bash}
@@ -146,10 +163,19 @@ The first one directs the output to test1.txt and will overwrite the file if it 
     head -n "$2" "$1" | tail -n "$3"
     ```
 Using `chmod` make the file executable by the owner, and run 
-    ```{bash eval=FALSE}
+
+**Solution**
+```{bash}
+chmod 770 middle.sh
+```
+
+    ```{bash}
     ./middle.sh pride_and_prejudice.txt 20 5
     ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
+
+**Solution** 
+The output displays the last 5 lines (tail) of the first 20 lines (head). `"$1"` `"$2"`, and `"$3"` are positional parameters. `"$1"` refers to the argument in the first position which is `pride_and_prejudice.txt`, `"$2"` refers to `20` which goes into the head command, and `"$3"` refers to `5` which goes into the tail command. We need the first line of the shell script to specify that the script will be run with a bash shell. 
 
 ### Q4. More fun with Linux
 
