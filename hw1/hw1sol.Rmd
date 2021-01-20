@@ -68,9 +68,12 @@ ls -al /usr/203b-data/mimic-iv/hosp
 ls -al /usr/203b-data/mimic-iv/icu
 ```
 
-`zcat`: Displays the contents of a compressed files
-`zless`: 
-`zmore`:
+`zcat`: Displays the all contents of compressed files
+
+`zless`: Displays the content of a compressed file but does not load all the content at once. You can use the up and down keys to scroll through the contents. 
+
+`zmore`: Displays all the content of a compressed file, but one screen at a time. You can use the up and down keys to scroll through the contents. 
+
 `zgrep`: Search the compressed file
 
 
