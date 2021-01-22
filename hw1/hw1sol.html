@@ -374,7 +374,7 @@ summary {
 
 <h1 class="title toc-ignore">BIOSTAT 203B HW1</h1>
 <h4 class="author">Benson Wu</h4>
-<h4 class="date">1/14/2021</h4>
+<h4 class="date">1/22/2021</h4>
 
 </div>
 
@@ -490,21 +490,31 @@ summary {
 ## -rw-r--r--. 1 huazhou huazhou  328835832 Jan 11 02:14 inputevents.csv.gz
 ## -rw-r--r--. 1 huazhou huazhou   35300863 Jan 11 02:25 outputevents.csv.gz
 ## -rw-r--r--. 1 huazhou huazhou   19362097 Jan 11 02:14 procedureevents.csv.gz</code></pre>
-<p><code>zcat</code>: Displays the contents of a compressed files <code>zless</code>: <code>zmore</code>: <code>zgrep</code>: Search the compressed file</p>
+<p><code>zcat</code>: Displays the all contents of compressed files</p>
+<p><code>zless</code>: Displays the content of a compressed file but does not load all the content at once. You can use the up and down keys to scroll through the contents.</p>
+<p><code>zmore</code>: Displays all the content of a compressed file, but one screen at a time. You can use the up and down keys to scroll through the contents.</p>
+<p><code>zgrep</code>: Search the compressed file</p>
 <ol start="4" style="list-style-type: decimal">
 <li><p>What’s the output of following bash script?</p>
 <pre class="bash"><code>for datafile in /usr/203b-data/mimic-iv/core/*.gz
   do
     ls -l $datafile
   done</code></pre>
-<p>Display the number of lines in each data file using a similar loop.</p></li>
+<pre><code>## -rw-r--r--. 1 huazhou huazhou 17224843 Jan 11 01:55 /usr/203b-data/mimic-iv/core/admissions.csv.gz
+## -rw-r--r--. 1 huazhou huazhou 2884996 Jan 11 01:54 /usr/203b-data/mimic-iv/core/patients.csv.gz
+## -rw-r--r--. 1 huazhou huazhou 51188147 Jan 11 01:55 /usr/203b-data/mimic-iv/core/transfers.csv.gz</code></pre></li>
 </ol>
 <p><strong>Solution</strong> The bashscript loops through all the documents that have the .gz extension in the /usr/203b-data/mimic-iv/core/ directory and gives a detailed contents of each item with the .gz extension.</p>
+<p>Display the number of lines in each data file using a similar loop.</p>
+<p><strong>Solution</strong></p>
 <pre class="bash"><code>for datafile in /usr/203b-data/mimic-iv/core/*.gz
   do
-    awk &#39;END { print NR }&#39; $datafile
+    zcat $datafile | wc -l
   done</code></pre>
-<p>This loop lists the number of lines in each data file.</p>
+<pre><code>## 524521
+## 383221
+## 2192964</code></pre>
+<p>This loop lists the number of lines in each zipped file.</p>
 <ol start="5" style="list-style-type: decimal">
 <li>Display the first few lines of <code>admissions.csv.gz</code>. How many rows are in this data file? How many unique patients (identified by <code>subject_id</code>) are in this data file? What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, <code>language</code>, <code>marital_status</code>, and <code>ethnicity</code>? Also report the count for each unique value of these variables. (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>uniq</code>, <code>wc</code>, and so on.)</li>
 </ol>
@@ -516,18 +526,95 @@ summary {
 ## 14029832,22059088,2120-01-18 01:28:00,2120-01-20 16:13:00,,URGENT,TRANSFER FROM HOSPITAL,HOME,Other,ENGLISH,,OTHER,,,0
 ## 14495017,22484010,2175-01-28 15:41:00,2175-01-29 16:00:00,,DIRECT EMER.,PHYSICIAN REFERRAL,HOME,Other,?,,WHITE,,,0
 ## 13676048,23865469,2193-01-19 05:27:00,2193-01-24 18:59:00,,URGENT,PHYSICIAN REFERRAL,HOME,Other,?,MARRIED,WHITE,,,0</code></pre>
-<pre class="bash"><code>awk &#39;END { print NR }&#39; /usr/203b-data/mimic-iv/core/admissions.csv.gz </code></pre>
-<pre><code>## 65081</code></pre>
-<p>There are 65081 rows including the header.</p>
-<pre class="bash"><code></code></pre>
+<p>How many rows are in this data file?</p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | wc -l 
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | wc -l </code></pre>
+<pre><code>## 524521
+## 524520</code></pre>
+<p>There are 524521 rows including the header and 524520 not including the header.</p>
 <p>How many unique patients (identified by <code>subject_id</code>) are in this data file?</p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $1}&#39; | sort | uniq -c | wc -l</code></pre>
+<pre><code>## 257366</code></pre>
+<p>There are 257366 unique patients identified by subject_id in admissions.csv.gz.</p>
+<p>What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, <code>language</code>, <code>marital_status</code>, and <code>ethnicity</code>?</p>
+<p><code>admission_type</code></p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $6}&#39; | sort | uniq -c </code></pre>
+<pre><code>##    7259 AMBULATORY OBSERVATION
+##   21595 DIRECT EMER.
+##   20014 DIRECT OBSERVATION
+##   72077 ELECTIVE
+##  100938 EU OBSERVATION
+##  158032 EW EMER.
+##   55532 OBSERVATION ADMIT
+##   41103 SURGICAL SAME DAY ADMISSION
+##   47970 URGENT</code></pre>
+<p><code>admission_location</code></p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $7}&#39; | sort | uniq -c </code></pre>
+<pre><code>##   60437 
+##     191 AMBULATORY SURGERY TRANSFER
+##   10678 CLINIC REFERRAL
+##  246241 EMERGENCY ROOM
+##     379 INFORMATION NOT AVAILABLE
+##    4484 INTERNAL TRANSFER TO OR FROM PSYCH
+##    6075 PACU
+##  127648 PHYSICIAN REFERRAL
+##    8453 PROCEDURE SITE
+##   39150 TRANSFER FROM HOSPITAL
+##    4069 TRANSFER FROM SKILLED NURSING FACILITY
+##   16715 WALK-IN/SELF REFERRAL</code></pre>
+<p><code>insurance</code></p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $9}&#39; | sort | uniq -c </code></pre>
+<pre><code>##   50962 Medicaid
+##  171492 Medicare
+##  302066 Other</code></pre>
+<p><code>language</code></p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $10}&#39; | sort | uniq -c </code></pre>
+<pre><code>##   46231 ?
+##  478289 ENGLISH</code></pre>
+<p><code>marital_status</code></p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $11}&#39; | sort | uniq -c </code></pre>
+<pre><code>##   66133 
+##   33762 DIVORCED
+##  195326 MARRIED
+##  180453 SINGLE
+##   48846 WIDOWED</code></pre>
+<p><code>ethnicity</code></p>
+<pre class="bash"><code>zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F &#39;,&#39; &#39;{print $12}&#39; | sort | uniq -c </code></pre>
+<pre><code>##    1536 AMERICAN INDIAN/ALASKA NATIVE
+##   24522 ASIAN
+##   80526 BLACK/AFRICAN AMERICAN
+##   29887 HISPANIC/LATINO
+##   26844 OTHER
+##    3742 UNABLE TO OBTAIN
+##   19419 UNKNOWN
+##  338044 WHITE</code></pre>
 </div>
 <div id="q3.-whos-popular-in-price-and-prejudice" class="section level2">
 <h2>Q3. Who’s popular in Price and Prejudice</h2>
 <ol style="list-style-type: decimal">
 <li><p>You and your friend just have finished reading <em>Pride and Prejudice</em> by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <a href="http://www.gutenberg.org/cache/epub/42671/pg42671.txt" class="uri">http://www.gutenberg.org/cache/epub/42671/pg42671.txt</a> and save to your local folder.</p>
-<pre class="bash"><code>curl http://www.gutenberg.org/cache/epub/42671/pg42671.txt &gt; /home/buwenson/Data/pride_and_prejudice.txt</code></pre>
+<pre class="bash"><code>curl http://www.gutenberg.org/cache/epub/42671/pg42671.txt &gt; /home/buwenson/biostat-203b-2021-winter/hw1/pride_and_prejudice.txt</code></pre>
 <p>Do <strong>not</strong> put this text file <code>pride_and_prejudice.txt</code> in Git. Using a <code>for</code> loop, how would you tabulate the number of times each of the four characters is mentioned?</p></li>
+</ol>
+<p><strong>Solution</strong></p>
+<pre class="bash"><code>declare -a StringArray=(&quot;Elizabeth&quot; &quot;Jane&quot; &quot;Lydia&quot; &quot;Darcy&quot;)
+for var in &quot;${StringArray[@]}&quot; 
+  do
+    grep -o $var pride_and_prejudice.txt | wc -l
+  done</code></pre>
+<pre><code>## 634
+## 294
+## 170
+## 417</code></pre>
+<p>Elizabeth shows up 634 times. Jane shows up 294 times. Lydia shows up 170 times. Darcy shows up 417 times.</p>
+<ol start="2" style="list-style-type: decimal">
 <li><p>What’s the difference between the following two commands?</p>
 <pre class="bash"><code>echo &#39;hello, world&#39; &gt; test1.txt</code></pre>
 <p>and</p>
@@ -538,10 +625,17 @@ summary {
 # Select lines from the middle of a file.
 # Usage: bash middle.sh filename end_line num_lines
 head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
-<p>Using <code>chmod</code> make the file executable by the owner, and run</p>
-<pre class="bash"><code>./middle.sh pride_and_prejudice.txt 20 5</code></pre>
-<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p></li>
+<p>Using <code>chmod</code> make the file executable by the owner, and run</p></li>
 </ol>
+<p><strong>Solution</strong></p>
+<pre class="bash"><code>chmod 770 middle.sh</code></pre>
+<pre class="bash"><code>./middle.sh pride_and_prejudice.txt 20 5</code></pre>
+<pre><code>## 
+## Author: Jane Austen
+## 
+## Editor: R. W. (Robert William) Chapman</code></pre>
+<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p>
+<p><strong>Solution</strong> The output displays the last 5 lines (tail) of the first 20 lines (head). <code>&quot;$1&quot;</code> <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> are positional parameters. <code>&quot;$1&quot;</code> refers to the argument in the first position which is <code>pride_and_prejudice.txt</code>, <code>&quot;$2&quot;</code> refers to <code>20</code> which goes into the head command, and <code>&quot;$3&quot;</code> refers to <code>5</code> which goes into the tail command. We need the first line of the shell script to specify that the script will be run with a bash shell.</p>
 <div id="q4.-more-fun-with-linux" class="section level3">
 <h3>Q4. More fun with Linux</h3>
 <p>Try these commands in Bash and interpret the results: <code>cal</code>, <code>cal 2021</code>, <code>cal 9 1752</code> (anything unusual?), <code>date</code>, <code>hostname</code>, <code>arch</code>, <code>uname -a</code>, <code>uptime</code>, <code>who am i</code>, <code>who</code>, <code>w</code>, <code>id</code>, <code>last | head</code>, <code>echo {con,pre}{sent,fer}{s,ed}</code>, <code>time sleep 5</code>, <code>history | tail</code>.</p>
@@ -600,7 +694,7 @@ head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 ## 24 25 26 27 28 29 30</code></pre>
 <p><code>cal 9 1752</code>: shows the calendar for September 1752, but the 3rd-13th are missing from the calendar!</p>
 <pre class="bash"><code>date</code></pre>
-<pre><code>## Tue Jan 19 23:18:35 UTC 2021</code></pre>
+<pre><code>## Fri Jan 22 05:43:13 UTC 2021</code></pre>
 <p><code>date</code>: gives the current day of the week, date, coordinated universal time, and year</p>
 <pre class="bash"><code>hostname</code></pre>
 <pre><code>## ucla-biostat-203b</code></pre>
@@ -612,7 +706,7 @@ head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <pre><code>## Linux ucla-biostat-203b 3.10.0-1160.6.1.el7.x86_64 #1 SMP Tue Nov 17 13:59:11 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux</code></pre>
 <p><code>uname -a</code>: this prints informartion about the operating system and machine hardware.</p>
 <pre class="bash"><code>uptime</code></pre>
-<pre><code>##  23:18:35 up 16 days,  1:29, 12 users,  load average: 1.19, 1.24, 0.76</code></pre>
+<pre><code>##  05:43:13 up 18 days,  7:54,  3 users,  load average: 0.55, 0.55, 0.44</code></pre>
 <p><code>uptime</code>: This gives the current time, how many users are on the server, and load average in the last 1, 5, and 15 minutes</p>
 <pre class="bash"><code>who am i</code></pre>
 <p><code>who am i</code>: This returns nothing, but the following works</p>
@@ -620,49 +714,31 @@ head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <pre><code>## buwenson</code></pre>
 <p><code>whoami</code>: returns username of curent user</p>
 <pre class="bash"><code>who</code></pre>
-<pre><code>## jihcai   pts/4        2021-01-19 18:36 (ip68-6-101-100.sb.sd.cox.net)
-## spendlove.sj pts/6        2021-01-19 20:37 (cpe-172-117-248-147.socal.res.rr.com)
-## andyliugraduateschool pts/7        2021-01-19 22:56 (c-65-50-147-213.hs.gigamonster.net)
-## buwenson pts/8        2021-01-19 23:05 (066-215-070-170.res.spectrum.com)
-## pdgeraldo pts/11       2021-01-19 23:13 (131.179.156.37)
-## huazhou  pts/12       2021-01-19 23:14 (108-64-58-205.lightspeed.irvnca.sbcglobal.net)
-## jtan.smeltzer pts/13       2021-01-19 23:14 (131.179.158.26)
-## mia.chen1998 pts/14       2021-01-19 23:14 (154.17.12.93)
-## kmishimoto pts/15       2021-01-19 23:15 (ip174-67-246-239.oc.oc.cox.net)
-## filipovicmilan271 pts/16       2021-01-19 23:18 (ip70-181-107-212.oc.oc.cox.net)
-## tibbe1td pts/17       2021-01-19 23:15 (c-68-55-91-32.hsd1.mi.comcast.net)
-## linyuzhou pts/18       2021-01-19 23:16 (s-169-232-70-224.resnet.ucla.edu)</code></pre>
+<pre><code>## angelicaruiz pts/0        2021-01-22 05:33 (cpe-108-185-43-213.socal.res.rr.com)
+## filipovicmilan271 pts/7        2021-01-21 06:03 (110.3.236.35.bc.googleusercontent.com)
+## tibbe1td pts/10       2021-01-22 05:19 (c-68-55-91-32.hsd1.mi.comcast.net)</code></pre>
 <p><code>who</code>: returns the usernames of users who are on the server, their terminal, log-in time, and what host they’re using the server from.</p>
 <pre class="bash"><code>w</code></pre>
-<pre><code>##  23:18:35 up 16 days,  1:29, 12 users,  load average: 1.19, 1.24, 0.76
+<pre><code>##  05:43:13 up 18 days,  7:54,  3 users,  load average: 0.55, 0.55, 0.44
 ## USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
-## jihcai   pts/4    ip68-6-101-100.s 18:36    2:47m  0.66s  0.58s -bash
-## spendlov pts/6    cpe-172-117-248- 20:37    1:12m  0.11s  0.11s -bash
-## andyliug pts/7    c-65-50-147-213. 22:56   21:47   0.01s  0.01s -bash
-## buwenson pts/8    066-215-070-170. 23:05   12:54   0.01s  0.01s -bash
-## pdgerald pts/11   131.179.156.37   23:13   51.00s  0.03s  0.03s -bash
-## huazhou  pts/12   108-64-58-205.li 23:14    3.00s  0.04s  0.04s -bash
-## jtan.sme pts/13   131.179.158.26   23:14    3:39   0.02s  0.02s -bash
-## mia.chen pts/14   154.17.12.93     23:14    2:19   0.03s  0.03s -bash
-## kmishimo pts/15   ip174-67-246-239 23:15    2:43   0.03s  0.00s git log
-## filipovi pts/16   ip70-181-107-212 23:18   11.00s  0.02s  0.02s -bash
-## tibbe1td pts/17   c-68-55-91-32.hs 23:15    3:22   0.02s  0.02s -bash
-## linyuzho pts/18   s-169-232-70-224 23:16   11.00s  0.02s  0.02s -bash</code></pre>
+## angelica pts/0    cpe-108-185-43-2 05:33    8:09   0.02s  0.02s -bash
+## filipovi pts/7    110.3.236.35.bc. Thu06   23:34m  0.06s  0.06s -bash
+## tibbe1td pts/10   c-68-55-91-32.hs 05:19   21:13   0.04s  0.04s -bash</code></pre>
 <p><code>w</code>: Header contains same information that <code>uptime</code> returns. Below the header contains the usernames of users who are on the server, their terminal type, host name, login time, idle time, JCPU time, PCPU time, and what type of command line they are using.</p>
 <pre class="bash"><code>id</code></pre>
 <pre><code>## uid=1035(buwenson) gid=1037(buwenson) groups=1037(buwenson) context=system_u:system_r:initrc_t:s0</code></pre>
 <p><code>id</code>: Returns user ID, group ID, supplemental group ID, and the security context (<a href="https://linuxize.com/post/id-command-in-linux/" class="uri">https://linuxize.com/post/id-command-in-linux/</a>)</p>
 <pre class="bash"><code>last | head</code></pre>
-<pre><code>## filipovi pts/16       ip70-181-107-212 Tue Jan 19 23:18   still logged in   
-## linyuzho pts/18       s-169-232-70-224 Tue Jan 19 23:16   still logged in   
-## tibbe1td pts/17       c-68-55-91-32.hs Tue Jan 19 23:15   still logged in   
-## valentin pts/16       47.156.178.126   Tue Jan 19 23:15 - 23:16  (00:01)    
-## kmishimo pts/15       ip174-67-246-239 Tue Jan 19 23:15   still logged in   
-## mia.chen pts/14       154.17.12.93     Tue Jan 19 23:14   still logged in   
-## jtan.sme pts/13       131.179.158.26   Tue Jan 19 23:14   still logged in   
-## huazhou  pts/12       108-64-58-205.li Tue Jan 19 23:14   still logged in   
-## yingyanw pts/10       s-164-67-81-28.r Tue Jan 19 23:14 - 23:16  (00:02)    
-## pdgerald pts/11       131.179.156.37   Tue Jan 19 23:13   still logged in</code></pre>
+<pre><code>## angelica pts/0        cpe-108-185-43-2 Fri Jan 22 05:33   still logged in   
+## tibbe1td pts/10       c-68-55-91-32.hs Fri Jan 22 05:19   still logged in   
+## angelica pts/4        ucla-biostat-203 Fri Jan 22 04:48 - 05:33  (00:44)    
+## ajedward pts/5        cpe-98-149-10-21 Fri Jan 22 04:16 - 04:53  (00:37)    
+## angelica pts/0        cpe-108-185-43-2 Fri Jan 22 02:47 - 05:33  (02:45)    
+## wzdbruin pts/0        112.32.10.108    Fri Jan 22 01:53 - 02:24  (00:30)    
+## wzdbruin pts/5        112.32.10.108    Fri Jan 22 01:31 - 01:56  (00:25)    
+## alvinw   pts/21       cpe-172-112-186- Fri Jan 22 01:14 - 02:26  (01:11)    
+## wzdbruin pts/19       112.32.10.108    Fri Jan 22 01:09 - 01:30  (00:21)    
+## wzdbruin pts/5        112.32.10.108    Fri Jan 22 00:56 - 01:26  (00:30)</code></pre>
 <p><code>last | head</code>: show the head (first 10 entries by default) of the usernames of the users who logged in to the server, the terminal type, IP address, the date and time of log in, and the duration of the time that they were logged in.</p>
 <pre class="bash"><code>echo {con,pre}{sent,fer}{s,ed}</code></pre>
 <pre><code>## consents consented confers confered presents presented prefers prefered</code></pre>
@@ -670,8 +746,8 @@ head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
 <pre class="bash"><code>time sleep 5</code></pre>
 <pre><code>## 
 ## real 0m5.002s
-## user 0m0.002s
-## sys  0m0.000s</code></pre>
+## user 0m0.000s
+## sys  0m0.002s</code></pre>
 <p><code>time sleep 5</code>: gives the amount of time that it takes to run <code>sleep 5</code>, which says to delay execution of a script for 5 seconds, so expectedly it the real time displayed is ~5 seconds.</p>
 <pre class="bash"><code>history | tail</code></pre>
 <p><code>history | tail</code>: Gives you the tail (last 10 by default) commands that you ran</p>

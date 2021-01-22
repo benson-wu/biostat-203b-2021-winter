@@ -1,8 +1,10 @@
 ---
 title: "BIOSTAT 203B HW1"
 author: "Benson Wu"
-date: "1/14/2021"
-output: html_document
+date: "1/22/2021"
+output:
+  html_document: default
+  pdf_document: default
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -79,24 +81,27 @@ ls -al /usr/203b-data/mimic-iv/icu
 
 
 4. What's the output of following bash script?
-    ```{bash, eval=F}
+    ```{bash}
     for datafile in /usr/203b-data/mimic-iv/core/*.gz
       do
         ls -l $datafile
       done
     ```
-Display the number of lines in each data file using a similar loop.
 
 **Solution**
 The bashscript loops through all the documents that have the .gz extension in the /usr/203b-data/mimic-iv/core/ directory and gives a detailed contents of each item with the .gz extension. 
 
-```{bash, eval=F}
+
+Display the number of lines in each data file using a similar loop.
+
+**Solution**
+```{bash}
 for datafile in /usr/203b-data/mimic-iv/core/*.gz
   do
-    awk 'END { print NR }' $datafile
+    zcat $datafile | wc -l
   done
 ```
-This loop lists the number of lines in each data file. 
+This loop lists the number of lines in each zipped file. 
 
 
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, `language`, `marital_status`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq`, `wc`, and so on.)
@@ -108,19 +113,67 @@ Print first few lines of admissions.csv.gz
 zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | head -n 5
 ```
 
+
+How many rows are in this data file?
 ```{bash}
-awk 'END { print NR }' /usr/203b-data/mimic-iv/core/admissions.csv.gz 
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | wc -l 
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | wc -l 
 ```
 
-There are 65081 rows including the header. 
+There are 524521 rows including the header and 524520 not including the header. 
 
 
 
 How many unique patients (identified by `subject_id`) are in this data file?
 
 ```{bash}
-
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $1}' | sort | uniq -c | wc -l
 ```
+
+There are 257366 unique patients identified by subject_id in admissions.csv.gz.
+
+
+What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, `language`, `marital_status`, and `ethnicity`?
+
+`admission_type`
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $6}' | sort | uniq -c 
+```
+
+
+`admission_location`
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $7}' | sort | uniq -c 
+```
+  
+`insurance`
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $9}' | sort | uniq -c 
+```
+
+
+`language`
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $10}' | sort | uniq -c 
+```
+
+`marital_status`
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $11}' | sort | uniq -c 
+```
+
+`ethnicity`
+```{bash}
+zcat /usr/203b-data/mimic-iv/core/admissions.csv.gz | tail -n +2 | \
+awk -F ',' '{print $12}' | sort | uniq -c 
+```
+
 
 ## Q3. Who's popular in Price and Prejudice
 
@@ -131,9 +184,7 @@ How many unique patients (identified by `subject_id`) are in this data file?
 Do **not** put this text file `pride_and_prejudice.txt` in Git. Using a `for` loop, how would you tabulate the number of times each of the four characters is mentioned?
 
 **Solution**
-Reference for looping technique: https://linuxhint.com/bash_loop_list_strings/
 
-# Iterate the string array using for loop
 ```{bash}
 declare -a StringArray=("Elizabeth" "Jane" "Lydia" "Darcy")
 for var in "${StringArray[@]}" 
@@ -169,9 +220,11 @@ Using `chmod` make the file executable by the owner, and run
 chmod 770 middle.sh
 ```
 
-    ```{bash}
-    ./middle.sh pride_and_prejudice.txt 20 5
-    ```
+```{bash}
+./middle.sh pride_and_prejudice.txt 20 5
+```
+
+
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
 
 **Solution** 
