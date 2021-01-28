@@ -28,9 +28,41 @@ There are quite a few utilities in R for reading data files. Let us test the spe
 
 In this homework, we stick to the tidyverse. 
 
+**Solution**
+We can use the library `tictoc` to measure code run time. 
+
+```{r}
+if(!require(tictoc)){
+    install.packages("tictoc")
+    library(tictoc)
+}
+
+tic("read.csv")
+df1 <- read.csv("/usr/203b-data/mimic-iv/core/admissions.csv.gz")
+toc()
+
+tic("read_csv")
+df2 <- read_csv("/usr/203b-data/mimic-iv/core/admissions.csv.gz")
+toc()
+
+tic("data.table")
+df3 <- fread("/usr/203b-data/mimic-iv/core/admissions.csv.gz")
+toc()
+```
+
+`fread` reads the compressed file the fastest among the three functions. 
+
+We will remove the other data frames and only keep the first for the rest of the assignment.
+
+```{r}
+df<-df1
+remove("df1", "df2", "df3")
+```
+
+
 ## Q2. Explore the `admission` table
 
-Demographic information of the patients admitted into hospital is available in `ADMISSION.csv.gz`. See <https://mimic-iv.mit.edu/docs/datasets/core/admissions/> for details of each field in this file. Summarize following variables using appropriate graphs. Explain any patterns you observe.   
+Demographic information of the patients admitted into hospital is available in `ADMISSION.csv.gz`. See <https://mimic-iv.mit.edu/docs/datasets/core/admissions/> for details of each field in this file. Summarize following variables using appropriate graphs. Explain any patterns you observe.  
 
 - admission year  
 - admission month  
@@ -49,6 +81,48 @@ Demographic information of the patients admitted into hospital is available in `
 - death 
 
 Note it is possible that one patient (uniquely identified by the `SUBJECT_ID`) is admitted into hospital multiple times. When summarizing some demographic information, it makes sense to summarize based on unique patients. 
+
+
+**Solution**
+
+First we want to parse the year, month, day, hour, and minute
+
+
+- admission year  
+```{r}
+df$admit_year <- year(df$admittime)
+
+df %>% ggplot(aes(admit_year)) + geom_bar() + xlab("Admit year")
+
+```
+
+
+- admission month  
+```{r}
+df$admit_month <- month(df$admittime)
+
+months <-c("Jan.", "Feb.", "Mar.","Apr.","May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.")
+df %>% ggplot(aes(x=factor(admit_month))) + geom_bar(stat="count") + 
+        xlab("Admit month") + scale_x_discrete(labels=months) +
+        theme(axis.text.x=element_text(angle=60,hjust=1))
+```
+
+The admission months are relatively uniformly distributed. 
+
+- admission month day  
+- admission week day  
+- admission hour (anything unusual?)  
+- length of hospital stay (from admission to discharge)  
+- number of deaths in each year  
+- admission type  
+- number of admissions per patient  
+- admission location  
+- insurance  
+- language  
+- martial status  
+- ethnicity  
+- death 
+
 
 ## Q3 Link `admission` and `patient` tables
 
