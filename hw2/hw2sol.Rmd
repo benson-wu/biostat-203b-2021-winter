@@ -1,6 +1,7 @@
 ---
 title: "Biostat 203B Homework 2"
 subtitle: Due Feb 5 @ 11:59PM
+author: Benson Wu
 output: 
   html_document:
     toc: true
@@ -206,11 +207,27 @@ df_admissions %>% ggplot(aes(x=factor(admit_hour))) + geom_bar(stat="count") +
 
 Peak admissions seem to happen between midnight and 1 AM. There is also a sudden spike in admissions between the 7AM and 8 AM. 
 
-```{r}
 
+### THERE IS A MISTAKE HERE. COME BACK AND FIX LATER (1/28)
+```{r}
+df_admissions$death <- if_else(is.na(df_admissions$deathtime), 0, 1)
+
+df_admissions %>% ggplot(aes(x=factor(admit_year), y=death)) + 
+                  geom_bar(stat="identity") + xlab("Admit year") +
+                  
+                  theme(axis.text.x=element_text(angle=60,hjust=1)) 
 ```
-- number of deaths in each year  
-- admission type  
+
+
+```{r}
+df_admissions %>% ggplot(aes(x=factor(admission_type))) + geom_bar(stat="count") + 
+        xlab("Admit type") +
+        theme(axis.text.x=element_text(angle=60,hjust=1))
+```
+
+The most common admission type is EW Emergency. 
+
+
 - number of admissions per patient  
 - admission location  
 - discharge location  
@@ -227,6 +244,24 @@ Explore `patients.csv.gz` (<https://mimic-iv.mit.edu/docs/datasets/core/patients
 
 - `gender`  
 - `anchor_age` (explain pattern you see)
+
+**Solution**
+
+```{r}
+df_patients <- fread("/usr/203b-data/mimic-iv/core/patients.csv.gz")
+
+df_patients %>% ggplot(aes(x=factor(gender))) + geom_bar(stat="count") + 
+        xlab("Gender") +scale_x_discrete(labels=c("Female", "Male"))
+```
+
+There are slightly more females than males 
+
+```{r}
+df_patients %>% ggplot(aes(anchor_age)) + geom_histogram() + 
+        xlab("Age in anchor year") 
+```
+
+There are a lot of people who report an age of 0 during the anchor year.
 
 ## Q6. Lab results
 
