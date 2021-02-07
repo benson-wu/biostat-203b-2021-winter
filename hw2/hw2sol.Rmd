@@ -39,6 +39,15 @@ system(str_c("tree -s -L 2 ", shQuote(mimic_path)), intern = TRUE)
 
 At this moment, you should already get credentialed on the PhysioNet. Please include a screenshot of your `Data Use Agreement for the MIMIC-IV (v0.4)`.
 
+**Solution**
+<center>
+
+![Signed DUA.](/home/buwenson/biostat-203b-2021-winter/hw2/DUA-1.jpg)
+
+</center>
+
+
+
 ## Q2. `read.csv` (base R) vs `read_csv` (tidyverse) vs `fread` (data.table)
 
 There are quite a few utilities in R for reading data files. Let us test the speed of reading a moderate sized compressed csv file, `admissions.csv.gz`, by three programs: `read.csv` in base R, `read_csv` in tidyverse, and `fread` in the popular data.table package. Is there any speed difference?
@@ -73,7 +82,7 @@ toc()
 We will remove the other data frames and only keep the first for the rest of the assignment.
 
 ```{r}
-df_admissions<-df1
+df_admissions <- df1
 remove("df1", "df2", "df3")
 ```
 
@@ -107,7 +116,7 @@ n_distinct(df_icu$subject_id)
 There are 50,048 distinct subject ID values not including missing values.
 
 ```{r}
-df_icu %>% ggplot(aes(los)) + geom_boxplot() + xlab("Days")
+df_icu %>% ggplot(aes(los)) + geom_boxplot() + xlab("Length of ICU Stay (Days)")
 summary(df_icu$los)
 ```
 
@@ -124,7 +133,7 @@ There are 11 distinct First ICU units. The frequency counts are visualized and l
 
 ```{r}
 df_icu %>% ggplot(aes(x=factor(last_careunit))) + geom_bar(stat="count") + 
-        xlab("First ICU unit") +
+        xlab("Last ICU unit") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
         geom_text(stat='count', aes(label=..count..), vjust=-1)
 ```
@@ -159,9 +168,12 @@ Note it is possible that one patient (uniquely identified by the `SUBJECT_ID`) i
 ```{r}
 df_admissions$admit_year <- year(df_admissions$admittime)
 
-df_admissions %>% ggplot(aes(admit_year)) + geom_bar() + xlab("Admit year") +
+df_admissions %>% ggplot(aes(x=admit_year)) + 
+                  stat_count(geom='line', aes(y=..count..)) +
+                  xlab("Admit year") +
                   scale_x_continuous(n.breaks = 20) +
                   theme(axis.text.x=element_text(angle=60,hjust=1)) 
+
 ```
 
 The count of each admit year is visualized in a bar graph. The amount of people admitted seem to increase until about 2030 and then stabilize until 2189. Starting form 2190, the number of admissions significnatly decrease. 
@@ -170,7 +182,8 @@ The count of each admit year is visualized in a bar graph. The amount of people 
 ```{r}
 df_admissions$admit_month <- month(df_admissions$admittime)
 
-months <-c("Jan.", "Feb.", "Mar.","Apr.","May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.")
+months <-c("Jan.", "Feb.", "Mar.","Apr.","May", "June", 
+           "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.")
 df_admissions %>% ggplot(aes(x=factor(admit_month))) + geom_bar(stat="count") + 
         xlab("Admit month") + scale_x_discrete(labels=months) +
         theme(axis.text.x=element_text(angle=60,hjust=1))
@@ -181,7 +194,8 @@ The count of each admission month is visualized in a bar graph. The admission mo
 
 ```{r}
 df_admissions$admit_month_day <- mday(df_admissions$admittime)
-df_admissions %>% ggplot(aes(x=factor(admit_month_day))) + geom_bar(stat="count") + 
+df_admissions %>% ggplot(aes(x=factor(admit_month_day))) + 
+        geom_bar(stat="count") + 
         xlab("Admit month day") +
         theme(axis.text.x=element_text(angle=60,hjust=1))
 ```
@@ -191,9 +205,10 @@ There seem to be a uniform amount of admissions from the 1st to 28th of each mon
 ```{r}
 df_admissions$admit_week_day <- wday(df_admissions$admittime)
 days <-c("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun")
-df_admissions %>% ggplot(aes(x=factor(admit_week_day))) + geom_bar(stat="count") + 
+df_admissions %>% ggplot(aes(x=factor(admit_week_day))) + 
+        geom_bar(stat="count") + 
         xlab("Admit week day") + scale_x_discrete(labels=days)
-        theme(axis.text.x=element_text(angle=60,hjust=1))
+        theme(axis.text.x=element_text(angle=60,hjust=1)) 
 ```
 
 The day of the week that individuals are admited are uniformly distributed. 
@@ -207,34 +222,102 @@ df_admissions %>% ggplot(aes(x=factor(admit_hour))) + geom_bar(stat="count") +
 
 Peak admissions seem to happen between midnight and 1 AM. There is also a sudden spike in admissions between the 7AM and 8 AM. 
 
-
-### THERE IS A MISTAKE HERE. COME BACK AND FIX LATER (1/28)
 ```{r}
-df_admissions$death <- if_else(is.na(df_admissions$deathtime), 0, 1)
+df_admissions$death_year <- year(ymd_hms(df_admissions$deathtime))
 
-df_admissions %>% ggplot(aes(x=factor(admit_year), y=death)) + 
-                  geom_bar(stat="identity") + xlab("Admit year") +
-                  
-                  theme(axis.text.x=element_text(angle=60,hjust=1)) 
+
+df_admissions %>% ggplot(aes(x=death_year)) + geom_bar(stat="count") + 
+                  xlab("Death year") +
+                  theme(axis.text.x=element_text(angle=60,hjust=1)) +
+                  scale_x_continuous(n.breaks = 20) 
 ```
 
 
 ```{r}
-df_admissions %>% ggplot(aes(x=factor(admission_type))) + geom_bar(stat="count") + 
+df_admissions %>% ggplot(aes(x=factor(admission_type))) + 
+        geom_bar(stat="count") + 
         xlab("Admit type") +
         theme(axis.text.x=element_text(angle=60,hjust=1))
 ```
 
 The most common admission type is EW Emergency. 
 
+```{r}
+df_admissions_count <- df_admissions %>% count(subject_id) 
+df_admissions_count %>% ggplot(aes(x=factor(n))) + geom_bar(stat="count") + 
+        xlab("Count of admission") +
+        theme(axis.text.x=element_text(angle=60,hjust=1))
+```
+The distribution of admissions that each subject has is skewed to the right. 
 
-- number of admissions per patient  
-- admission location  
-- discharge location  
-- insurance  
-- language  
-- martial status  
-- ethnicity  
+```{r}
+df_admissions %>% ggplot(aes(x=factor(admission_location))) + 
+        geom_bar(stat="count") + 
+        xlab("Admit location") +
+        theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+        geom_text(stat='count', aes(label=..count..), vjust=-1)
+```
+
+
+```{r}
+df_admissions %>% ggplot(aes(x=factor(discharge_location))) + 
+        geom_bar(stat="count") + 
+        xlab("Discharge location") +
+        theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+        geom_text(stat='count', aes(label=..count..), vjust=-1)
+```
+ 
+ 
+```{r}
+df_admissions %>% ggplot(aes(x=factor(insurance))) + 
+        geom_bar(stat="count") + 
+        xlab("Insurance") +
+        theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+        geom_text(stat='count', aes(label=..count..), vjust=-1)
+``` 
+
+```{r}
+df_admissions$language_new <- recode(df_admissions$language, 
+                                    "?" = "Not English")
+if(!require(scales)){
+    install.packages("scales")
+    library(scales)
+}
+df_admissions %>% ggplot(aes(x=factor(language_new))) + 
+        geom_bar(stat="count") + 
+        xlab("Language") +
+        theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+        geom_text(stat='count', aes(label=..count..), vjust=-1) + 
+        scale_y_continuous(labels = comma)
+``` 
+
+
+```{r}
+#Turn all blanks into NA
+if(!require(tidyverse)){
+    install.packages("tidyverse")
+    library(tidyverse)
+}
+
+df_admissions$marital_status[df_admissions$marital_status == ""] <- NA
+df_admissions %>% drop_na(marital_status) %>%
+        ggplot(aes(x=factor(marital_status))) + 
+        geom_bar(stat="count") + 
+        xlab("Marital Status") +
+        theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+        geom_text(stat='count', aes(label=..count..), vjust=-1)
+```  
+
+```{r}
+df_admissions %>% ggplot(aes(x=factor(ethnicity))) + 
+        geom_bar(stat="count") + 
+        xlab("Ethnicity") +
+        theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+        geom_text(stat='count', aes(label=..count..), vjust=-1)
+``` 
+
+
+**COME BACK TO THIS (2/2)**
 - death 
 
 
@@ -261,13 +344,42 @@ df_patients %>% ggplot(aes(anchor_age)) + geom_histogram() +
         xlab("Age in anchor year") 
 ```
 
-There are a lot of people who report an age of 0 during the anchor year.
+There are a lot of people who report an age of 0 during the anchor year. Then there are two peaks in the anchor age for individuals in their late teens/early 20's and for individuals in their 50's.
 
 ## Q6. Lab results
 
 `labevents.csv.gz` (<https://mimic-iv.mit.edu/docs/datasets/hosp/labevents/>) contains all laboratory measurements for patients. 
 
-We are interested in the lab measurements of creatinine, potassium, sodium, chloride, bicarbonate, hematocrit, white blood cell count, glucose, magnesium, calcium, phosphorus, and lactate. Find the `itemid`s of these lab measurements from `d_labitems.csv.gz` and retrieve a subset of `labevents.csv.gz` only containing these items.
+We are interested in the lab measurements of creatinine, potassium, sodium, chloride, bicarbonate, hematocrit, white blood i
+
+**Solution**
+First take a look at first lines of the labevents data.
+```{r}
+if(!require(stringr)){
+    install.packages("stringr")
+    library(stringr)
+}
+
+system(str_c("zcat < ", shQuote("/usr/203b-data/mimic-iv/hosp/labevents.csv.gz"), " | head"), 
+       intern = TRUE)
+```
+
+`read_csv` doesn't work even with selected columns due to memory issues. 
+
+Let's try reading using data.table. 
+
+```{r}
+#{df_labevents <- fread("/usr/203b-data/mimic-iv/hosp/labevents.csv.gz", select=c("subject_id", "hadm_id", "itemid", "charttime", "valuenum"), nThread=4)
+#df_labevents %>% semi_join(df_icu, by c("subject_id", "hadm_id")) %>% fwrite("labevents_icustays.csv.gz", nThread=4)
+#}
+```
+
+
+```{r}
+#df_labevents <- fread("/usr/203b-data/mimic-iv/hosp/labevents.csv.gz")
+#df_d_labitems <- fread("/usr/203b-data/mimic-iv/hosp/d_labitems.csv.gz")
+
+```
 
 ## Q7. Vitals from chartered events
 
@@ -276,6 +388,8 @@ We are interested in the vitals for ICU patients: heart rate, mean and systolic 
 `chartevents.csv.gz` (<https://mimic-iv.mit.edu/docs/datasets/icu/chartevents/>) contains all the charted data available for a patient. During their ICU stay, the primary repository of a patient’s information is their electronic chart. The `ITEMID` variable indicates a single measurement type in the database. The `VALUE` variable is the value measured for `ITEMID`. 
 
 `d_items.csv.gz` (<https://mimic-iv.mit.edu/docs/datasets/icu/d_items/>) is the dictionary for the `ITEMID` in `CHARTEVENTS.csv`. Find potential values of `ITEMID` that correspond to systolic blood pressure, i.e., `LABEL` contains the string `systolic`. 
+
+
 
 ## Q8. Putting things together
 
@@ -291,3 +405,8 @@ and columns contains at least following variables
 - first lab measurements during ICU stay  
 - first vitals measurement during ICU stay  
 - an indicator variable whether the patient died within 30 days of hospital admission  
+
+age at admission = year(admittime) - anchor_year + anchor_age
+```{r}
+#icustay
+```
