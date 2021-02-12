@@ -82,8 +82,7 @@ df2 <- read_csv(str_c(mimic_path,"/core/admissions.csv.gz"))
 toc()
 
 tic("data.table")
-df3 <- fread(str_c(mimic_path,"/core/admissions.csv.gz")) %>%
- print(width = Inf)
+df3 <- fread(str_c(mimic_path,"/core/admissions.csv.gz")) 
 toc()
 ```
 
@@ -110,8 +109,7 @@ remove("df1", "df2", "df3")
 **Solution**
 Let's read in the ICU stays data first.
 ```{r}
-df_icu <- fread(str_c(mimic_path,"/icu/icustays.csv.gz")) %>%
- print(width = Inf)
+df_icu <- fread(str_c(mimic_path,"/icu/icustays.csv.gz"))
 ```
 
 ```{r}
@@ -136,19 +134,19 @@ After exploring the distribution, it seems like the data is skewed to the right.
 
 ```{r}
 df_icu %>% ggplot(aes(x=factor(first_careunit))) + 
-        geom_bar(mapping = aes(fill=first_careunit)) + 
+        geom_bar() + 
         xlab("First ICU unit") +
         theme(axis.text.x=element_text(angle=90,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1) 
+        geom_text(stat='count', aes(label=..count..), size=2, vjust=-0.1)  
 ```
 There are 11 distinct First ICU units. The frequency counts are visualized and labeled with the frequqency counts for each unit. The MICU seems to be the most common first ICU unit. 
 
 ```{r}
 df_icu %>% ggplot(aes(x=factor(last_careunit))) + 
-        geom_bar(mapping = aes(fill=last_careunit)) + 
+        geom_bar() + 
         xlab("Last ICU unit") +
         theme(axis.text.x=element_text(angle=90,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=2, vjust=-0.1)
 ```
 There are 9 distinct last ICU units. The frequency counts are visualized and labeled with the frequqency counts for each unit. The MICU seems to be the most common last ICU unit. 
 
@@ -201,7 +199,8 @@ months <-c("Jan.", "Feb.", "Mar.","Apr.","May", "June",
            "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec.")
 df_admissions %>% ggplot(aes(x=factor(admit_month))) + geom_bar(stat="count") + 
         xlab("Admit month") + scale_x_discrete(labels=months) +
-        theme(axis.text.x=element_text(angle=60,hjust=1))
+        theme(axis.text.x=element_text(angle=60,hjust=1)) +
+        geom_text(stat='count', aes(label=..count..), size=2, vjust=-0.1)
 ```
 
 The admit month is parsed from the `admittime` variable. The count of each admission month is visualized in a bar graph to see the count of ICU admissions over the different months of the year. The admission months are relatively uniformly distributed. 
@@ -261,7 +260,7 @@ df_admissions %>% ggplot(aes(x=factor(admission_type))) +
         geom_bar(stat="count") + 
         xlab("Admit type") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=2, vjust=-0.1)
 ```
 
 The most common admission type is EW Emergency. 
@@ -289,7 +288,7 @@ df_admissions %>% drop_na(admission_location) %>%
         geom_bar(stat="count") + 
         xlab("Admit location") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=2, vjust=-0.1)
 ```
 Those who had blank values or "INFORMATION NOT AVAILABLE" were recoded to missing for this visualization. The most common admission location is the emergency room. 
 
@@ -302,7 +301,7 @@ df_admissions %>% drop_na(discharge_location) %>%
         geom_bar(stat="count") + 
         xlab("Discharge location") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=2, vjust=-0.1)
 ```
  Those who had blank values were recoded to missing. The most common discharge location is at home. 
  
@@ -312,7 +311,7 @@ df_admissions %>% distinct(., subject_id, .keep_all=TRUE) %>%
         geom_bar(stat="count") + 
         xlab("Insurance") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=5, vjust=-0.1)
 ``` 
 We examined unique patients for this visualization to avoid counting insurance for subjects who appeared in the data multiple times. Other insurance was the most common type of insurance.
 ```{r}
@@ -324,7 +323,7 @@ df_admissions %>% distinct(., subject_id, .keep_all=TRUE) %>%
         geom_bar(stat="count") + 
         xlab("Language") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1) + 
+        geom_text(stat='count', aes(label=..count..), size=5, vjust=-0.1) + 
         scale_y_continuous(labels = comma)
 ``` 
 
@@ -340,7 +339,7 @@ df_admissions %>% drop_na(marital_status) %>%
         geom_bar(stat="count") + 
         xlab("Marital Status") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=4, vjust=-0.1)
 ```  
 
 Those who had a blank as a value were recoded to missing. Additionally, we only examined unique patients for this visualization to counting subjects who appeared multiple times in the data. Most of the patients were either married or single. 
@@ -357,7 +356,7 @@ df_admissions %>% distinct(., subject_id, .keep_all=TRUE) %>%
         geom_bar(stat="count") + 
         xlab("Ethnicity") +
         theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=3, vjust=-0.1)
 ``` 
 Individuals who ethnicity was unknown or unable to be obtained were ommitted from this visualization. Additionally, we only examined unique patients for this visualization to counting subjects who appeared multiple times in the data. A majority of the patients in this data were White. 
 
@@ -369,7 +368,7 @@ df_admissions %>% distinct(., subject_id, .keep_all=TRUE) %>%
                                   "Death in hospital")) +
         geom_bar(stat="count") + 
         xlab("Death") +
-        geom_text(stat='count', aes(label=..count..), vjust=-1)
+        geom_text(stat='count', aes(label=..count..), size=5, vjust=-0.1)
 ```
 We only examined unique patients for this visualization to counting subjects who appeared multiple times in the data. Most patients survived until discharge from the hospital. 
 
@@ -385,13 +384,12 @@ Explore `patients.csv.gz` (<https://mimic-iv.mit.edu/docs/datasets/core/patients
 **Solution**
 
 ```{r}
-df_patients <- fread(str_c(mimic_path, "/core/patients.csv.gz")) %>%
- print(width = Inf)
+df_patients <- fread(str_c(mimic_path, "/core/patients.csv.gz")) 
 
 df_patients %>% distinct(., subject_id, .keep_all=TRUE) %>% 
                 ggplot(aes(x=factor(gender))) + geom_bar(stat="count") + 
                 xlab("Gender") + scale_x_discrete(labels=c("Female", "Male")) + 
-                geom_text(stat='count', aes(label=..count..), vjust=-1)
+                geom_text(stat='count', aes(label=..count..), size=5, vjust=-0.1)
 ```
 
 Unique subjects were examined to avoid having additional count of males or females. There are more females than males in this dataset. 
@@ -499,7 +497,7 @@ for(labitem in labitems){
 Create a tibble that contains the item IDs and item names 
 ```{r}
 labitem_itemid <- tibble(itemid = itemids, labitem = labitems) %>%
-  print(width=inf)
+  print(width = Inf)
 ```
 
 Then filter for rows in `labevents_icustays.csv.gz` that contain only these items. The result is the same as the short cut method. 
@@ -523,8 +521,7 @@ We are interested in the vitals for ICU patients: heart rate, mean and systolic 
 
 Let's read in the dictionary for the item IDs in `chartevents.csv.gz`
 ```{r}
-df_d_items<-fread(str_c(mimic_path, "/icu/d_items.csv.gz"), nThread = 4) %>%
-  print(width=Inf)
+df_d_items<-fread(str_c(mimic_path, "/icu/d_items.csv.gz"), nThread = 4) 
 ```
 
 Let's find the item IDs of the following variables: heart rate, mean and systolic blood pressure (invasive and noninvasive measurements combined), body temperature, SpO2, and respiratory rate.
@@ -560,8 +557,7 @@ chartitems <- c("heart rate", "Blood pressure mean", "systolic",
 
 for(chartitem in chartitems){
   print(str_interp("search for ${chartitem}"))
-  df_d_items %>% filter(str_detect(label, regex(chartitem, ignore_case = T))) %>%
-    print(width=Inf)
+  df_d_items %>% filter(str_detect(label, regex(chartitem, ignore_case = T))) 
 }
 ```
 *Item IDs*
@@ -578,7 +574,7 @@ for(chartitem in chartitems){
 Let's try to read in the `chartevents_short.csv.gz` data now. 
 
 Trial 1: Cannot read this in even on my local machine. 
-```{r}
+```{r eval=FALSE}
 if(!file.exists("chartevents_short.csv.gz")){
  system.time(df_chartevents <-
         fread(str_c(mimic_path, "/icu/chartevents.csv.gz"),
@@ -617,7 +613,7 @@ df_chartevents <- fread(str_c(mimic_derived_path,
 as_tibble(df_chartevents) %>% 
   mutate_at(c("subject_id", "hadm_id", "stay_id", "itemid"), as.numeric) %>%
   mutate(charttime=ymd_hms(charttime)) %>%
-  print(width=inf)
+  print(width=Inf)
 
 ```
 
@@ -625,7 +621,7 @@ Create a tibble that contains the item IDs and item names
 ```{r}
 chartevents_itemid <- tibble(itemid = c(220045, 220052, 220050, 220181, 220179, 223761, 220277, 220210)
 , labitem = c("heart_rate", "arterial_BP_mean", "arterial_BP_sys", "noninvasive_bp", "noninvasive_bp_sys", "temperature_far", "SpO2", "respiratory_rate")) %>%
-  print(width=inf)
+  print(width=Inf)
 ```
 
 
