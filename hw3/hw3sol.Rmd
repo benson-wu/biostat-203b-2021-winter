@@ -134,7 +134,7 @@ labevents_tble <-tbl(con, Id(schema = "public", table = "mimic_labevents_icu")) 
 ```{r}
 # TODO
 chartevents_tble <- tbl(con, Id(schema = "public", table = "mimic_chartevents_icu")) %>%
-  print(width = Inf)
+  print(width = Inf) 
 ```
 
 8. Put things together. Using one chain of pipes `%>%` to perform following data wrangling steps: (i) keep only the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission >= 18), (iv) merge in the labevents and chartevents tables, (v) display the SQL query, (vi) collect SQL query result into memory as a tibble, (vii) create an indicator for 30-day mortality, (viii) save the final tibble to an `icu_cohort.rds` R data file in the `mimiciv_shiny` folder.
@@ -163,21 +163,25 @@ icustays_tble %>%
   filter(age_at_adm >= 18) %>%
   #merge labevents and chartevents tables
   left_join(labevents_tble, by = c("subject_id", "hadm_id"))  %>%
-  left_join(chartevents_tble, by = c("subject_id", "hadm_id")) %>%
-  #Display SQL query
+  left_join(chartevents_tble, by = c("subject_id", "hadm_id", "stay_id")) %>%
+  # #Display SQL query
   show_query() %>%
-  #Store query in tibble 
+  # #Store query in tibble
   {. ->> icustays_tble_query } %>%
   collect() %>%
-  #Create indicatoer for 30-day mortality 
-  mutate(days_before_death = as.numeric((ymd_hms(deathtime)-ymd_hms(admittime)), 
+  #Create indicatoer for 30-day mortality
+  mutate(days_before_death = as.numeric((ymd_hms(deathtime)-ymd_hms(admittime)),
          units="days")) %>%
   mutate(died_within_30_days = ifelse(days_before_death<=30, 1, 0)) %>%
   #Save final tibble to icu_cohort.rds in the shiny folder
-  saveRDS(str_c(working_path,"/mimiciv_shiny/icu_cohort.rds"))
+  #saveRDS(str_c(working_path,"/mimiciv_shiny/icu_cohort.rds")) %>%
+    print(width = Inf)
 
-
-
+#Double check that there are no repeated subject_id values
+icu_cohort<-read_rds(str_c(working_path,"/mimiciv_shiny/icu_cohort.rds"))
+n_occur <- data.frame(table(icu_cohort$subject_id))
+n_occur[n_occur$Freq > 1,]
+#We are good to go!
 ```
 
 
