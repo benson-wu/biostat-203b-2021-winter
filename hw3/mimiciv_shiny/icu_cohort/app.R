@@ -15,8 +15,9 @@ library(shiny)
 library(ggplot2)
 library(plotly)
 library(shinydashboard)
-library(formattable)
-library(qwraps2)
+library(tab)
+library(Hmisc)
+
 
 icu_cohort <- readRDS("/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter/hw3/mimiciv_shiny/icu_cohort.rds")
 icu_cohort$insurance <-factor(icu_cohort$insurance)
@@ -78,13 +79,13 @@ server <- function(input, output, session) {
       #Continuous
       if(input$variables %in% continuous_variables){
         table<-summary(icu_cohort[[input$variables]])
-        formattable(table)
+        table
       }
       
       #Categorical
       else if(input$variables %in% categorical_variables){
         table<-table(icu_cohort[[input$variables]], useNA = "ifany")
-        formattable(table)
+        table
       }
     })
     
