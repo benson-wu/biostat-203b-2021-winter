@@ -14,6 +14,9 @@ source("generate_vals.R")
 library(shiny)
 library(ggplot2)
 library(plotly)
+library(shinydashboard)
+library(formattable)
+library(qwraps2)
 
 icu_cohort <- readRDS("/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter/hw3/mimiciv_shiny/icu_cohort.rds")
 icu_cohort$insurance <-factor(icu_cohort$insurance)
@@ -39,6 +42,8 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
 
         # Show a plot of the generated distribution
         mainPanel(
+           h2("Summary of the variable"),
+           verbatimTextOutput("sum"),
            plotOutput("histogram")
         )
     )
@@ -67,6 +72,26 @@ server <- function(input, output, session) {
                                         selected = "Heart rate")
                  }
                })
+  
+    output$sum <- renderPrint({
+
+      #Continuous
+      if(input$variables %in% continuous_variables){
+        table<-summary(icu_cohort[[input$variables]])
+        formattable(table)
+      }
+      
+      #Categorical
+      else if(input$variables %in% categorical_variables){
+        table<-table(icu_cohort[[input$variables]], useNA = "ifany")
+        formattable(table)
+      }
+    })
+    
+    
+    
+    
+    
     output$histogram <- renderPlot({
       #If/if else loop to determine what category we're in
       #This will allow the the labs() option to call on the correct x label
@@ -81,11 +106,13 @@ server <- function(input, output, session) {
         xlabel<-names(vitals_variables[which(vitals_variables == input$variables)])
       }
       
-      #Generate plot
+      #GENERATE PLOTS
+      #Continuous
       if(input$variables %in% continuous_variables){
         ggplot(icu_cohort, aes_string(x=input$variables)) + 
           geom_histogram(aes(y=..density..)) + labs(x=xlabel)
-        }
+      }
+      #Categorical
       else if(input$variables %in% categorical_variables){
         ggplot(icu_cohort) + 
           geom_bar(aes_string(x=input$variables)) + 
@@ -93,11 +120,6 @@ server <- function(input, output, session) {
       }
     })
 }
-# 
-# ggplot(icu_cohort, aes_string(x="insurance")) + 
-#   geom_bar(stat="count") + 
-#   theme(axis.text.x=element_text(angle=60,hjust=1)) + 
-#   geom_text(stat='count', aes(label=..count..), size=5, vjust=-0.1)
 
 # Run the application 
 shinyApp(ui = ui, server = server)
