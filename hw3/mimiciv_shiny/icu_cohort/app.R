@@ -15,8 +15,10 @@ library(shiny)
 library(ggplot2)
 library(plotly)
 
+icu_cohort <- readRDS("/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter/hw3/mimiciv_shiny/icu_cohort.rds")
+icu_cohort$insurance <-factor(icu_cohort$insurance)
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("cerulean"),
 
     # Application title
     titlePanel("ICU Cohort Data"),
@@ -24,10 +26,15 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            selectInput("var_cat","Choose category",
-                         variable_categories),
-            selectInput("variables", "Choose variable", 
-                        demographic_variables)
+            h3("Select the inputs"),
+            selectInput(inputId = "var_cat",
+                        label = "Choose category",
+                        choices = variable_categories, 
+                        selected = "Demographic"),
+            selectInput(inputId = "variables", 
+                        label = "Choose variable", 
+                        choices = demographic_variables,
+                        selected = "Insurance status")
         ),
 
         # Show a plot of the generated distribution
@@ -61,16 +68,36 @@ server <- function(input, output, session) {
                  }
                })
     output$histogram <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        # x    <- icu_cohort$los
-        # bins <- seq(min(x), max(x), length.out = input$bins + 1)
-        # 
-        # # draw the histogram with the specified number of bins
-        # hist(x, breaks = bins, col = 'darkgray', border = 'white')
-        ggplot(icu_cohort, aes_string(input$variables)) + geom_histogram(aes(y=..density..)) + 
-          labs(x=input$variables) 
+      #If/if else loop to determine what category we're in
+      #This will allow the the labs() option to call on the correct x label
+      #Solution for reactive xlabel names: https://community.rstudio.com/t/reactive-axis-labels-in-shiny-with-ggplot-display-user-selected-label-not-variable-name/17560/2
+      if (input$var_cat=="Demographic"){
+        xlabel<-names(demographic_variables[which(demographic_variables == input$variables)])
+      } else if (input$var_cat=="Admission"){
+        xlabel<-names(admission_variables[which(admission_variables == input$variables)])
+      } else if (input$var_cat=="Lab measurements"){
+        xlabel<-names(lab_variables[which(lab_variables == input$variables)])
+      } else {
+        xlabel<-names(vitals_variables[which(vitals_variables == input$variables)])
+      }
+      
+      #Generate plot
+      if(input$variables %in% continuous_variables){
+        ggplot(icu_cohort, aes_string(x=input$variables)) + 
+          geom_histogram(aes(y=..density..)) + labs(x=xlabel)
+        }
+      else if(input$variables %in% categorical_variables){
+        ggplot(icu_cohort) + 
+          geom_bar(aes_string(x=input$variables)) + 
+          labs(x=xlabel)
+      }
     })
 }
+# 
+# ggplot(icu_cohort, aes_string(x="insurance")) + 
+#   geom_bar(stat="count") + 
+#   theme(axis.text.x=element_text(angle=60,hjust=1)) + 
+#   geom_text(stat='count', aes(label=..count..), size=5, vjust=-0.1)
 
 # Run the application 
 shinyApp(ui = ui, server = server)
