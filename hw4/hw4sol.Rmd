@@ -21,7 +21,22 @@ Load database libraries and the tidyverse frontend:
 library(tidyverse)
 library(lubridate)
 library(miceRanger)
+library(stringr)
 ```
+
+Change directory depending on environment 
+```{r}
+os <- sessionInfo()$running
+
+#Generate path for mimic data
+if (str_detect(os, "Linux")) {
+  working_path <- "/home/buwenson/biostat-203b-2021-winter"
+} else if (str_detect(os, "macOS")) {
+  working_path <- 
+    "/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter"
+}
+```
+
 
 ## Q1. Missing data
 
@@ -47,7 +62,7 @@ Multiple Imputation by Chained Equations is a robust, informative method of deal
 
 ```{r}
 #Read in data set
-icu_cohort <- readRDS("/home/buwenson/biostat-203b-2021-winter/hw3/mimiciv_shiny/icu_cohort.rds")
+icu_cohort <- readRDS(str_c(working_path, "/hw3/mimiciv_shiny/icu_cohort.rds"))
 
 #Filter out variables with over 5000 missingness. This code gets the percentage
 #of NAs and only keeps variables that have less than (5000/#number of rows in the data frame)% 
