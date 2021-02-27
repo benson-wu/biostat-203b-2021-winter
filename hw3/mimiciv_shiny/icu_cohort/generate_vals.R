@@ -1,6 +1,5 @@
 
 # This script generates the lists needed for the shiny app
-
 variable_categories <- c("Demographic", "Admission",
                          "Lab measurements", "Vitals")
 demographic_variables <- c("Insurance status" = "insurance",
@@ -65,6 +64,10 @@ categorical_variables <- c("insurance",
                                        "anchor_year_group",
                                        "died_within_30_days")
 
+many_categories_variables<-c("ethnicity", "first_careunit", "last_careunit", 
+                             "admission_type", "admission_location", 
+                             "discharge_location")
+
 continuous_variables <- c("age_at_adm", 
                           "intime",
                           "outtime",
@@ -93,6 +96,40 @@ continuous_variables <- c("age_at_adm",
                           "temperature_fahrenheit",
                           "arterial_blood_pressure_systolic",
                           "arterial_blood_pressure_mean")
+
+
+
+#Data cleaning 
+# We will make nonsensical values into NA
+library(stringr)
+if (str_detect(os, "Linux")) {
+  working_path <- "/home/buwenson/biostat-203b-2021-winter"
+} else if (str_detect(os, "macOS")) {
+  working_path <- 
+    "/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter"
+}
+
+#Read in data
+icu_cohort <- readRDS(str_c(working_path, "/hw3/mimiciv_shiny/icu_cohort.rds"))
+
+#Language
+icu_cohort$language <- recode(icu_cohort$language, 
+                                     "?" = "NOT ENGLISH")
+#Marital status
+icu_cohort$marital_status[icu_cohort$marital_status == ""] <- NA
+
+#Ethnicity 
+icu_cohort$ethnicity[icu_cohort$ethnicity == "UNKNOWN"] <- NA
+icu_cohort$ethnicity[icu_cohort$ethnicity == "UNABLE TO OBTAIN"] <- NA
+
+#Sex
+icu_cohort$gender<-recode(icu_cohort$gender, `F` = "Female", `M` = "Male")
+
+
+
+
+
+
 
 
 # variable_categories <- c("Demographic", "Admission", 

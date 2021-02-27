@@ -14,16 +14,21 @@ source("generate_vals.R")
 library(shiny)
 library(ggplot2)
 library(plotly)
+library(shinythemes)
 library(shinydashboard)
 library(tab)
 library(Hmisc)
+library(tidyverse)
+library(shinyjs)
+library(ggtext)
+
+options(scipen=10000)
 
 
-icu_cohort <- readRDS("/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter/hw3/mimiciv_shiny/icu_cohort.rds")
-icu_cohort$insurance <-factor(icu_cohort$insurance)
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(theme = shinytheme("cerulean"),
-
+    useShinyjs(),
     # Application title
     titlePanel("ICU Cohort Data"),
 
@@ -38,8 +43,13 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
             selectInput(inputId = "variables", 
                         label = "Choose variable", 
                         choices = demographic_variables,
-                        selected = "Insurance status")
+                        selected = "Insurance status"),
+            sliderInput(inputId = "bins",
+                        label = "Select number of bins", 
+                        min=1, max=50, value=10, step=1)
+            
         ),
+        
 
         # Show a plot of the generated distribution
         mainPanel(
@@ -74,6 +84,19 @@ server <- function(input, output, session) {
                  }
                })
   
+
+  #Enable slider only for continuous variables
+  value <- reactive(input$variables)
+  observeEvent(value(), 
+               {if(value() %in% categorical_variables){
+                  shinyjs::disable("bins")
+               }else{
+                 shinyjs::enable("bins")
+               }
+                 }
+  )
+  
+  #Print summary table
     output$sum <- renderPrint({
 
       #Continuous
@@ -110,15 +133,39 @@ server <- function(input, output, session) {
       #GENERATE PLOTS
       #Continuous
       if(input$variables %in% continuous_variables){
-        ggplot(icu_cohort, aes_string(x=input$variables)) + 
-          geom_histogram(aes(y=..density..)) + labs(x=xlabel)
+        min<-quantile(icu_cohort[[input$variables]], c(0.25), na.rm=TRUE)
+        max<-quantile(icu_cohort[[input$variables]], c(0.75), na.rm=TRUE)
+        iqr<-max-min
+        lower_fence<-min-(1.5*iqr)
+        upper_fence<-max+(1.5*iqr)
+        icu_cohort %>%
+          ggplot(aes_string(x=input$variables)) + 
+          geom_histogram(aes(y=..density..), bins = input$bins) + 
+          labs(x=xlabel) +
+          #Only display non-outlier values
+          scale_x_continuous(limits = c(lower_fence, upper_fence)) +
+          labs(caption = "Note: Outliers that fall more than 1.5 times the interquartile range above the third quartile or below the first quartile are excluded from the plot") + 
+          theme(plot.caption = element_markdown(hjust = 0))
+        
       }
       #Categorical
       else if(input$variables %in% categorical_variables){
-        ggplot(icu_cohort) + 
-          geom_bar(aes_string(x=input$variables)) + 
-          labs(x=xlabel)
-      }
+        
+        #Condition on categorical variables that have a lot of/long labels
+        #so that we can graph the xlabels at an angle
+        if(input$variables %in% many_categories_variables){
+          icu_cohort %>% drop_na(input$variables) %>% 
+            ggplot() + geom_bar(aes_string(x=input$variables)) + 
+            theme(axis.text.x=element_text(angle=60,hjust=1)) +
+            labs(x=xlabel)
+        }
+        else{
+          icu_cohort %>% drop_na(input$variables) %>% 
+            ggplot() + geom_bar(aes_string(x=input$variables)) + 
+            labs(x=xlabel)
+        }
+        
+        }
     })
 }
 
