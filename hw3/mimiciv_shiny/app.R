@@ -21,6 +21,7 @@ library(Hmisc)
 library(tidyverse)
 library(shinyjs)
 library(ggtext)
+library(hrbrthemes)
 
 options(scipen=10000)
 
@@ -44,6 +45,11 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                         label = "Choose variable", 
                         choices = demographic_variables,
                         selected = "Insurance status"),
+            radioButtons(inputId = "stratification",
+                         label = 
+                    "Stratify by patients who died within 30 days of admission",
+                         choices = stratification_choices,
+                         selected = "No"),
             sliderInput(inputId = "bins",
                         label = "Select number of bins", 
                         min=1, max=50, value=10, step=1)
@@ -98,17 +104,36 @@ server <- function(input, output, session) {
   
   #Print summary table
     output$sum <- renderPrint({
-
-      #Continuous
-      if(input$variables %in% continuous_variables){
-        table<-summary(icu_cohort[[input$variables]])
-        table
+      #If no to stratifications
+      if(input$stratification == "No"){
+        #Continuous
+        if(input$variables %in% continuous_variables){
+          table<-summary(icu_cohort[[input$variables]])
+          table
+        }
+        
+        #Categorical
+        else if(input$variables %in% categorical_variables){
+          table<-table(icu_cohort[[input$variables]], useNA = "ifany")
+          table
+        }
       }
-      
-      #Categorical
-      else if(input$variables %in% categorical_variables){
-        table<-table(icu_cohort[[input$variables]], useNA = "ifany")
-        table
+      #If yes to stratifications
+      else{
+        #Continuous
+        if(input$variables %in% continuous_variables){
+          table<-tapply(icu_cohort[[input$variables]], 
+                        icu_cohort$died_within_30_days, summary)
+          table
+          
+        }
+        
+        #Categorical
+        else if(input$variables %in% categorical_variables){
+          table<-table(icu_cohort[[input$variables]], 
+                       icu_cohort$died_within_30_days, useNA = "ifany")
+          table
+        }
       }
     })
     
@@ -121,51 +146,109 @@ server <- function(input, output, session) {
       #This will allow the the labs() option to call on the correct x label
       #Solution for reactive xlabel names: https://community.rstudio.com/t/reactive-axis-labels-in-shiny-with-ggplot-display-user-selected-label-not-variable-name/17560/2
       if (input$var_cat=="Demographic"){
-        xlabel<-names(demographic_variables[which(demographic_variables == input$variables)])
+        xlabel<-names(demographic_variables[which(demographic_variables == 
+                                                    input$variables)])
       } else if (input$var_cat=="Admission"){
-        xlabel<-names(admission_variables[which(admission_variables == input$variables)])
+        xlabel<-names(admission_variables[which(admission_variables == 
+                                                  input$variables)])
       } else if (input$var_cat=="Lab measurements"){
         xlabel<-names(lab_variables[which(lab_variables == input$variables)])
       } else {
-        xlabel<-names(vitals_variables[which(vitals_variables == input$variables)])
+        xlabel<-names(vitals_variables[which(vitals_variables == 
+                                               input$variables)])
       }
       
       #GENERATE PLOTS
-      #Continuous
-      if(input$variables %in% continuous_variables){
-        min<-quantile(icu_cohort[[input$variables]], c(0.25), na.rm=TRUE)
-        max<-quantile(icu_cohort[[input$variables]], c(0.75), na.rm=TRUE)
-        iqr<-max-min
-        lower_fence<-min-(1.5*iqr)
-        upper_fence<-max+(1.5*iqr)
-        icu_cohort %>%
-          ggplot(aes_string(x=input$variables)) + 
-          geom_histogram(aes(y=..density..), bins = input$bins) + 
-          labs(x=xlabel) +
-          #Only display non-outlier values
-          scale_x_continuous(limits = c(lower_fence, upper_fence)) +
-          labs(caption = "Note: Outliers that fall more than 1.5 times the interquartile range above the third quartile or below the first quartile are excluded from the plot") + 
-          theme(plot.caption = element_markdown(hjust = 0))
+      #If no stratification
+      if(input$stratification == "No"){
+        #Continuous
+        if(input$variables %in% continuous_variables){
+          min<-quantile(icu_cohort[[input$variables]], c(0.25), na.rm=TRUE)
+          max<-quantile(icu_cohort[[input$variables]], c(0.75), na.rm=TRUE)
+          iqr<-max-min
+          lower_fence<-min-(1.5*iqr)
+          upper_fence<-max+(1.5*iqr)
+          icu_cohort %>%
+            ggplot(aes_string(x=input$variables)) + 
+            geom_histogram(aes(y=..density..), bins = input$bins, 
+                           colour="black", fill="blue", alpha=0.2) +
+            labs(x=xlabel) +
+            #Only display non-outlier values
+            scale_x_continuous(limits = c(lower_fence, upper_fence)) +
+            labs(caption = str_c(caption1, caption2, caption3)) + 
+            theme(plot.caption = element_markdown(hjust = 0))
+          
+            
+          
+        }
+        #Categorical
+        else if(input$variables %in% categorical_variables){
+          
+          #Condition on categorical variables that have a lot of/long labels
+          #so that we can graph the xlabels at an angle
+          if(input$variables %in% many_categories_variables){
+            icu_cohort %>% drop_na(input$variables) %>% 
+              ggplot() + geom_bar(aes_string(x=input$variables),
+                                  fill="blue", colour="black", alpha=0.2) + 
+              theme(axis.text.x=element_text(angle=60,hjust=1)) +
+              labs(x=xlabel)
+          }
+          else{
+            icu_cohort %>% drop_na(input$variables) %>% 
+              ggplot() + geom_bar(aes_string(x=input$variables),
+                                  fill="blue", colour="black", alpha=0.2) + 
+              labs(x=xlabel)
+          }
+          
+        }
+      }
+      #If yes to stratification
+      else{
+        #Continuous
+        if(input$variables %in% continuous_variables){
+          min<-quantile(icu_cohort[[input$variables]], c(0.25), na.rm=TRUE)
+          max<-quantile(icu_cohort[[input$variables]], c(0.75), na.rm=TRUE)
+          iqr<-max-min
+          lower_fence<-min-(1.5*iqr)
+          upper_fence<-max+(1.5*iqr)
+          icu_cohort %>%
+            ggplot(aes_string(x=input$variables, color ="died_within_30_days", 
+                              fill="died_within_30_days")) + 
+            geom_histogram(aes(y=..density..), bins = input$bins,
+                           alpha=0.4, position = 'identity') +
+            labs(x=xlabel) +
+            #Only display non-outlier values
+            scale_x_continuous(limits = c(lower_fence, upper_fence)) +
+            labs(caption = str_c(caption1, caption2, caption3)) + 
+            theme(plot.caption = element_markdown(hjust = 0)) +
+            guides(fill=guide_legend(title="Death status"), color = FALSE)
+          
+        }
+        #Categorical
+        else if(input$variables %in% categorical_variables){
+          
+          #Condition on categorical variables that have a lot of/long labels
+          #so that we can graph the xlabels at an angle
+          if(input$variables %in% many_categories_variables){
+            icu_cohort %>% drop_na(input$variables) %>% 
+              ggplot() + geom_bar(aes_string(x=input$variables, 
+                                             fill="died_within_30_days"),
+                                  position="dodge", alpha=0.6) + 
+              theme(axis.text.x=element_text(angle=60,hjust=1)) +
+              labs(x=xlabel) +
+              guides(fill=guide_legend(title="Death status"), color = FALSE)
+          }
+          else{
+            icu_cohort %>% drop_na(input$variables) %>% 
+              ggplot() + geom_bar(aes_string(x=input$variables, 
+                                             fill="died_within_30_days"),
+                                  position="dodge", alpha=0.6) + 
+              labs(x=xlabel) +
+              guides(fill=guide_legend(title="Death status"), color = FALSE)
+          }
+        }
         
       }
-      #Categorical
-      else if(input$variables %in% categorical_variables){
-        
-        #Condition on categorical variables that have a lot of/long labels
-        #so that we can graph the xlabels at an angle
-        if(input$variables %in% many_categories_variables){
-          icu_cohort %>% drop_na(input$variables) %>% 
-            ggplot() + geom_bar(aes_string(x=input$variables)) + 
-            theme(axis.text.x=element_text(angle=60,hjust=1)) +
-            labs(x=xlabel)
-        }
-        else{
-          icu_cohort %>% drop_na(input$variables) %>% 
-            ggplot() + geom_bar(aes_string(x=input$variables)) + 
-            labs(x=xlabel)
-        }
-        
-        }
     })
 }
 

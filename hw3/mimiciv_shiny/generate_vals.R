@@ -107,7 +107,11 @@ continuous_variables <- c("age_at_adm",
                           "arterial_blood_pressure_systolic",
                           "arterial_blood_pressure_mean")
 
+stratification_choices<-c("No", "Yes")
 
+caption1<-"Note: Outliers that fall more than 1.5 times the interquartile range" 
+caption2<-" above the third quartile or below the " 
+caption3<-"first quartile are excluded from the plot"
 
 #Data cleaning 
 # We will make nonsensical values into NA
@@ -147,54 +151,3 @@ icu_cohort$died_within_30_days<-recode(icu_cohort$died_within_30_days,
 
 
 
-# variable_categories <- c("Demographic", "Admission", 
-#                          "Lab measurements", "Vitals")
-# demographic_variables <- c("Insurance status", 
-#                            "Language", 
-#                            "Marital status",
-#                            "Ethnicity", 
-#                            "Sex", 
-#                            "Age at admission")
-
-# admission_variables <- c("First care unit",
-#                          "Last care unit", 
-#                          "Intime", 
-#                          "Outtime", 
-#                          "Length of stay", 
-#                          "Admit time", 
-#                          "Discharge time", 
-#                          "Death time",
-#                          "Admission type", 
-#                          "Admission location", 
-#                          "Discharge location", 
-#                          "Emergency dep. registration time", 
-#                          "Emergency dep. discharge time", 
-#                          "Death during hospitalization", 
-#                          "Age during anchor year", 
-#                          "Anchor year", 
-#                          "Anchor year group", 
-#                          "Date of death", 
-#                          "Death within 30 days")
-# 
-# lab_variables <- c("Bicarbonate", 
-#                    "Calcium", 
-#                    "Chloride", 
-#                    "Creatinine",
-#                    "Glucose", 
-#                    "Magnesium", 
-#                    "Potassium", 
-#                    "Sodium", 
-#                    "Hematocrit",
-#                    "White blood cell count", 
-#                    "Lactate")
-# vitals_variables <- c("Heart rate", 
-#                       "Non-invasive sys. blood pressure",
-#                       "Non-invasive mean blood pressure",
-#                       "Respiratory rate",
-#                       "Temperature fahrenheit",
-#                       "Arterial systolic blood pressure",
-#                       "Arterial mean blood pressure")
-# 
-# 
-# 
-# 
