@@ -173,7 +173,7 @@ icustays_tble %>%
   # #Display SQL query
   show_query() %>%
   # #Store query in tibble
-  {. ->> icustays_tble_query } %>%
+  as_tibble() %>%
   collect() %>%
   #Create indicatoer for 30-day mortality
   mutate(days_before_death = as.numeric((ymd_hms(deathtime)-ymd_hms(admittime)),
@@ -201,3 +201,7 @@ rm(list = ls())
 ## Q2. Shiny app
 
 Develop a Shiny app for exploring the ICU cohort data created in Q1. The app should reside in the `mimiciv_shiny` folder. The app should provide easy access to the graphical and numerical summaries of variables (demographics, lab measurements, vitals) in the ICU cohort.
+
+**Solution**
+
+I created a shiny app that explores the ICU cohort dataset. Just a few things to note are (1) you can stratify the summary statistics and graphs by 30 day mortality status and (2) you will need the `generate_vals.R` script in the `mimiciv_shiny` folder in order to make sure that all the objects and data are called correctly in the `app.R` file. 

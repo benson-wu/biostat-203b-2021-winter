@@ -709,64 +709,52 @@ admissions_tble &lt;- tbl(con, Id(schema = &quot;mimic_core&quot;, table = &quot
 ## # Database: postgres 10.0.16 [postgres@/var/run/postgresql:5432/mimiciv]
 ##    subject_id  hadm_id admittime           dischtime          
 ##         &lt;int&gt;    &lt;int&gt; &lt;dttm&gt;              &lt;dttm&gt;             
-##  1   12730675 29964986 2194-09-13 02:56:00 2194-09-15 14:44:00
-##  2   16723151 29931393 2169-04-07 07:54:00 2169-04-17 17:41:00
-##  3   13945721 20161475 2179-06-29 16:58:00 2179-07-02 17:15:00
-##  4   15618507 22211811 2126-02-04 22:50:00 2126-02-10 15:15:00
-##  5   19958467 23578497 2151-12-28 02:27:00 2151-12-28 16:49:00
-##  6   12662773 27699524 2146-03-05 22:30:00 2146-03-16 15:45:00
-##  7   12308084 28088200 2135-10-10 21:05:00 2135-10-12 15:14:00
-##  8   18518552 28352822 2168-11-01 20:45:00 2168-11-03 16:54:00
-##  9   14314196 24952312 2131-07-11 12:03:00 2131-07-13 14:50:00
-## 10   14268918 29272266 2158-12-19 08:00:00 2158-12-20 12:26:00
-##    deathtime           admission_type              admission_location    
-##    &lt;dttm&gt;              &lt;chr&gt;                       &lt;chr&gt;                 
-##  1 NA                  DIRECT EMER.                PHYSICIAN REFERRAL    
-##  2 NA                  EW EMER.                    PHYSICIAN REFERRAL    
-##  3 NA                  DIRECT EMER.                PHYSICIAN REFERRAL    
-##  4 NA                  EW EMER.                    EMERGENCY ROOM        
-##  5 NA                  EW EMER.                    TRANSFER FROM HOSPITAL
-##  6 NA                  EW EMER.                    EMERGENCY ROOM        
-##  7 NA                  EW EMER.                    EMERGENCY ROOM        
-##  8 NA                  OBSERVATION ADMIT           CLINIC REFERRAL       
-##  9 NA                  URGENT                      TRANSFER FROM HOSPITAL
-## 10 NA                  SURGICAL SAME DAY ADMISSION PHYSICIAN REFERRAL    
-##    discharge_location       insurance language marital_status
-##    &lt;chr&gt;                    &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;         
-##  1 HOME HEALTH CARE         Medicare  ENGLISH  MARRIED       
-##  2 HOME HEALTH CARE         Other     ENGLISH  MARRIED       
-##  3 HOME                     Other     ENGLISH  MARRIED       
-##  4 SKILLED NURSING FACILITY Medicare  ?        WIDOWED       
-##  5 HOME                     Other     ?        SINGLE        
-##  6 HOME HEALTH CARE         Other     ENGLISH  WIDOWED       
-##  7 HOME                     Other     ENGLISH  SINGLE        
-##  8 HOME                     Medicaid  ENGLISH  SINGLE        
-##  9 HOME                     Medicare  ENGLISH  DIVORCED      
-## 10 HOME                     Other     ENGLISH  MARRIED       
-##    ethnicity              edregtime           edouttime          
-##    &lt;chr&gt;                  &lt;dttm&gt;              &lt;dttm&gt;             
-##  1 WHITE                  2194-09-12 16:51:00 2194-09-12 21:17:00
-##  2 WHITE                  2169-04-07 05:46:00 2169-04-07 09:57:00
-##  3 HISPANIC/LATINO        NA                  NA                 
-##  4 WHITE                  2126-02-04 20:40:00 2126-02-04 23:17:00
-##  5 WHITE                  2151-12-27 18:34:00 2151-12-28 04:35:00
-##  6 BLACK/AFRICAN AMERICAN 2146-03-05 13:25:00 2146-03-05 23:57:00
-##  7 WHITE                  2135-10-10 17:38:00 2135-10-11 08:25:00
-##  8 OTHER                  2168-11-01 14:22:00 2168-11-01 22:15:00
-##  9 WHITE                  2131-07-11 01:07:00 2131-07-11 13:13:00
-## 10 WHITE                  NA                  NA                 
-##    hospital_expire_flag
-##                   &lt;int&gt;
-##  1                    0
-##  2                    0
-##  3                    0
-##  4                    0
-##  5                    0
-##  6                    0
-##  7                    0
-##  8                    0
-##  9                    0
-## 10                    0
+##  1   12427812 21593330 2184-01-06 11:51:00 2184-01-10 11:45:00
+##  2   14029832 22059088 2120-01-18 01:28:00 2120-01-20 16:13:00
+##  3   14495017 22484010 2175-01-28 15:41:00 2175-01-29 16:00:00
+##  4   13676048 23865469 2193-01-19 05:27:00 2193-01-24 18:59:00
+##  5   13831972 27763544 2131-01-27 04:03:00 2131-01-27 05:39:00
+##  6   18523038 25414328 2142-08-26 17:14:00 2142-08-27 10:00:00
+##  7   16705931 20580522 2174-10-24 11:30:00 2174-10-24 18:45:00
+##  8   19963742 24951506 2171-07-04 15:58:00 2171-07-05 13:37:00
+##  9   10903424 22568585 2181-01-31 13:09:00 2181-01-31 13:42:00
+## 10   15030422 21975876 2149-09-21 23:54:00 2149-09-22 03:59:00
+##    deathtime           admission_type         admission_location    
+##    &lt;dttm&gt;              &lt;chr&gt;                  &lt;chr&gt;                 
+##  1 NA                  URGENT                 PHYSICIAN REFERRAL    
+##  2 NA                  URGENT                 TRANSFER FROM HOSPITAL
+##  3 NA                  DIRECT EMER.           PHYSICIAN REFERRAL    
+##  4 NA                  URGENT                 PHYSICIAN REFERRAL    
+##  5 NA                  EU OBSERVATION         EMERGENCY ROOM        
+##  6 NA                  DIRECT OBSERVATION     PROCEDURE SITE        
+##  7 NA                  DIRECT OBSERVATION     PHYSICIAN REFERRAL    
+##  8 NA                  AMBULATORY OBSERVATION PACU                  
+##  9 NA                  EU OBSERVATION         EMERGENCY ROOM        
+## 10 NA                  EU OBSERVATION         EMERGENCY ROOM        
+##    discharge_location insurance language marital_status ethnicity
+##    &lt;chr&gt;              &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;    
+##  1 HOME               Other     ENGLISH  &lt;NA&gt;           UNKNOWN  
+##  2 HOME               Other     ENGLISH  &lt;NA&gt;           OTHER    
+##  3 HOME               Other     ?        &lt;NA&gt;           WHITE    
+##  4 HOME               Other     ?        MARRIED        WHITE    
+##  5 &lt;NA&gt;               Medicaid  ENGLISH  SINGLE         WHITE    
+##  6 &lt;NA&gt;               Other     ENGLISH  SINGLE         WHITE    
+##  7 &lt;NA&gt;               Other     ENGLISH  MARRIED        WHITE    
+##  8 &lt;NA&gt;               Other     ENGLISH  SINGLE         UNKNOWN  
+##  9 &lt;NA&gt;               Other     ENGLISH  SINGLE         WHITE    
+## 10 &lt;NA&gt;               Other     ENGLISH  SINGLE         WHITE    
+##    edregtime           edouttime           hospital_expire_flag
+##    &lt;dttm&gt;              &lt;dttm&gt;                             &lt;int&gt;
+##  1 NA                  NA                                     0
+##  2 NA                  NA                                     0
+##  3 NA                  NA                                     0
+##  4 NA                  NA                                     0
+##  5 2131-01-26 22:19:00 2131-01-27 05:39:00                    0
+##  6 NA                  NA                                     0
+##  7 NA                  NA                                     0
+##  8 NA                  NA                                     0
+##  9 NA                  NA                                     0
+## 10 NA                  NA                                     0
 ## # … with more rows</code></pre>
 <ol start="6" style="list-style-type: decimal">
 <li>Connect to the <code>mimic_labevents_icu</code> table.</li>
@@ -876,7 +864,7 @@ icustays_tble %&gt;%
   # #Display SQL query
   show_query() %&gt;%
   # #Store query in tibble
-  {. -&gt;&gt; icustays_tble_query } %&gt;%
+  as_tibble() %&gt;%
   collect() %&gt;%
   #Create indicatoer for 30-day mortality
   mutate(days_before_death = as.numeric((ymd_hms(deathtime)-ymd_hms(admittime)),
@@ -926,6 +914,8 @@ n_occur[n_occur$Freq &gt; 1,]</code></pre>
 <div id="q2.-shiny-app" class="section level2">
 <h2>Q2. Shiny app</h2>
 <p>Develop a Shiny app for exploring the ICU cohort data created in Q1. The app should reside in the <code>mimiciv_shiny</code> folder. The app should provide easy access to the graphical and numerical summaries of variables (demographics, lab measurements, vitals) in the ICU cohort.</p>
+<p><strong>Solution</strong></p>
+<p>I created a shiny app that explores the ICU cohort dataset. Just a few things to note are (1) you can stratify the summary statistics and graphs by 30 day mortality status and (2) you will need the <code>generate_vals.R</code> script in the <code>mimiciv_shiny</code> folder in order to make sure that all the objects and data are called correctly in the <code>app.R</code> file.</p>
 </div>
 
 
