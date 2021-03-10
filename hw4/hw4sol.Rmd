@@ -1,6 +1,7 @@
 ---
-title: "Biostat 203B Homework 4 (Draft)"
+title: "Biostat 203B Homework 4"
 subtitle: Due Mar 12 @ 11:59PM
+author: Benson Wu
 output:
   html_document:
     toc: true
@@ -42,7 +43,8 @@ if (str_detect(os, "Linux")) {
   working_path <- 
     "/Users/bensonwu/Documents/UCLA/2020-2021/Winter 2021/BIOSTAT_203B/biostat-203b-2021-winter"
 } else {
-  working_path <- "C:/Users/benson.wu/Documents/biostat-203b-2021-winter-develop/"
+  working_path <- 
+    "C:/Users/benson.wu/Documents/biostat-203b-2021-winter-develop/"
 }
 ```
 
@@ -74,8 +76,26 @@ Through the Shiny app developed in HW3, we observe abundant missing values in th
 2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
 
 **Q1.2 Solution**
+[Reference for explanation](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3074241/)
 
-Multiple Imputation by Chained Equations is a robust, informative method of dealing with missing data in datasets. The procedure ‘fills in’ (imputes) missing data in a dataset through an iterative series of predictive models. In each iteration, each specified variable in the dataset is imputed using the other variables in the dataset. These iterations should be run until it appears that convergence has been met.
+Step 1: A simple imputation, such as imputing the mean, is performed for every missing value in the dataset. These imputations in this missing values act as “place holders.”
+
+
+Step 2: Start with the variable with the fewest number of missing values. The “place holder” mean imputations for one variable (“var”) are set back to missing.
+
+
+Step 3: “var” is the dependent variable in a regression model and all the other variables are independent variables in the regression model.
+
+
+Step 4: The missing values for “var” are then replaced with predictions (imputations) from the regression model. When “var” is subsequently used as an independent variable in the regression models for other variables, both the observed and these imputed values will be used.
+
+
+Step 5: Moving on to the next variable with the next fewest missing values, steps 2–4 are then repeated for each variable that has missing data. The cycling through each of the variables constitutes one iteration. At the end of one iteration all of the missing values have been replaced with predictions from regressions that reflect the relationships observed in the data.
+
+
+Step 6: Steps 2 through 4 are repeated for a number of iterations, with the imputations being updated at each iteration. The idea is that by the end of the iterations the distribution of the parameters governing the imputations (e.g., the coefficients in the regression models) should have converged in the sense of becoming stable.
+
+
 
 ### Part 3
 
@@ -101,7 +121,28 @@ icu_cohort_filtered <- icu_cohort[, keeps, drop=FALSE]
 ```
 
 
-Next, let's recode erroneous values to `NA` and clean up data. 
+Next, let's recode erroneous values to `NA` and clean up data. I have decided to make the following changes:
+
+* Marital status
+    + Individuals who had a blank value were recoded to `NA`
+* Ethnicity
+    + Individuals who had a value of "UNKNOWN" or "UNABLE TO OBTAIN" were recoded to `NA` because those categories do not provide useful information.
+    
+* Heart rate
+    + The value 941 was recoded to `NA`, as it is too extreme of a value to be a heart rate
+    
+* Non-invasive systolic blood pressure
+    + The value 12262 was recoded to `NA`, as it is too extreme of a value to be a systolic blood pressure value
+    
+* Non-invasive mean blood pressure
+    + Values $\ge$ 936 were recoded to `NA`, as these values are too extreme to be blood pressure values
+
+* Temperature
+    + Values $\lt$ 50.0 were recoded to `NA`, as these values are too low to be sensible body temperatures in fahrenheit. Hypothermia can cause the body temperature to fall to [50.0 $^{\circ}$ F](https://www.uofmhealth.org/health-library/aa53968spec), so all values below that may be unrealistic and data errors.  
+    
+* Arterial systolic blood pressure 
+    + The value 703 was recoded to `NA`, as it is too extreme of a value to be a systolic blood pressure value
+
 
 ```{r}
 #Marital status
@@ -111,65 +152,66 @@ icu_cohort_filtered$marital_status <- factor(icu_cohort_filtered$marital_status)
 
 #Ethnicity: "UNKNOWN" and "UNABLE TO OBTAIN" were recoded to NA
 icu_cohort_filtered$ethnicity[icu_cohort_filtered$ethnicity == "UNKNOWN"] <- NA
-icu_cohort_filtered$ethnicity[icu_cohort_filtered$ethnicity == "UNABLE TO OBTAIN"] <- NA
+icu_cohort_filtered$ethnicity[
+  icu_cohort_filtered$ethnicity == "UNABLE TO OBTAIN"] <- NA
 icu_cohort_filtered$ethnicity <- factor(icu_cohort_filtered$ethnicity)
 
 #Recode gender to make the values numerical
-icu_cohort_filtered$gender<-recode(icu_cohort_filtered$gender, `F` = 0, `M` = 1)
+icu_cohort_filtered$gender <-
+  recode(icu_cohort_filtered$gender, `F` = 0, `M` = 1)
 icu_cohort_filtered$gender <- factor(icu_cohort_filtered$gender)
 
 #Factorize death within 30 days
 icu_cohort_filtered$died_within_30_days <- factor(
   icu_cohort_filtered$died_within_30_days)
-```
 
-Recode extreme values to NA. 
-```{r}
 #Heart rate
 tail(sort(icu_cohort_filtered$heart_rate),5)  
 icu_cohort_filtered$heart_rate[icu_cohort_filtered$heart_rate == 941] <- NA
 
 #Non-invasive systolic blood pressure
 tail(sort(icu_cohort_filtered$non_invasive_blood_pressure_systolic),5) 
-icu_cohort_filtered$non_invasive_blood_pressure_systolic[icu_cohort_filtered$non_invasive_blood_pressure_systolic == 12262] <- NA
+icu_cohort_filtered$non_invasive_blood_pressure_systolic[
+  icu_cohort_filtered$non_invasive_blood_pressure_systolic == 12262] <- NA
 
 #Non-invasive mean blood pressure
 tail(sort(icu_cohort_filtered$non_invasive_blood_pressure_mean),10) 
 max<-c(936, 6116, 120130, 140119)
-icu_cohort_filtered$non_invasive_blood_pressure_mean[icu_cohort_filtered$non_invasive_blood_pressure_mean %in% max] <- NA
+icu_cohort_filtered$non_invasive_blood_pressure_mean[
+  icu_cohort_filtered$non_invasive_blood_pressure_mean %in% max] <- NA
 
 #Respiratory rate 
 tail(sort(icu_cohort_filtered$respiratory_rate),5) #No extreme outliers 
 
 #Temperature 
-tail(sort(icu_cohort_filtered$temperature_fahrenheit),5) #No extreme outliers 
+head(sort(icu_cohort_filtered$temperature_fahrenheit),150) 
+icu_cohort_filtered$temperature_fahrenheit[
+  icu_cohort_filtered$temperature_fahrenheit<50] <- NA
 
 #Arterial systolic blood pressure 
 tail(sort(icu_cohort_filtered$arterial_blood_pressure_systolic),10) 
-icu_cohort_filtered$non_invasive_blood_pressure_mean[icu_cohort_filtered$non_invasive_blood_pressure_mean == 703] <- NA
+icu_cohort_filtered$non_invasive_blood_pressure_mean[
+  icu_cohort_filtered$non_invasive_blood_pressure_mean == 703] <- NA
 
-#Arterial mean blood pressure 
+#Arterial mean blood pressure
+ #There are negative values, but no need to worry because this variable gets dropped
 head(sort(icu_cohort_filtered$arterial_blood_pressure_mean),100) 
-tail(sort(icu_cohort_filtered$arterial_blood_pressure_mean),100) #Not sure yet, come back to this 
+tail(sort(icu_cohort_filtered$arterial_blood_pressure_mean),100) 
 
 #Nothing to change for lab measurements
-
-
-
 ```
 
 
 Now let's filter out variables that have over 5000 missing values. 
 
 ```{r}
-#Filter out variables with over 5000 missingness. This code gets the percentage
-#of NAs and only keeps variables that have less than (5000/#number of rows in the data frame)% 
-#missingness
-
+#Filter out variables with over 5000 missingness. This code gets the percentage of NAs and only keeps variables that have less than (5000/#number of rows in the data frame)% 
 icu_cohort_filtered <- 
   icu_cohort_filtered[, which(
     colMeans(is.na(icu_cohort_filtered)) < 5000/nrow(icu_cohort))]
 ```
+
+Ethnicity, lactate, arterial systolic blood pressure, and arterial mean blood pressure were dropped.
 
 ### Part 4
 
@@ -177,8 +219,8 @@ icu_cohort_filtered <-
 
 **Q1.4 Solution**
 
-The output of miceRanger was saved to a .RData file to avoid running miceRanger again. 
-```{r cache.lazy=FALSE}
+The imputation was unable to converge on my machine with 16gb memory, so I limited the depth of the random forests to 20 in order for the imputation to converge. The output of miceRanger was saved to a .RData file to avoid running miceRanger again. 
+```{r load miceObj1, cache.lazy=FALSE}
 if(file.exists(str_c(working_path, "hw4/miceObj1.RData"))){
   load(str_c(working_path, "hw4/miceObj1.RData"))
 } else{
@@ -187,8 +229,10 @@ if(file.exists(str_c(working_path, "hw4/miceObj1.RData"))){
                           returnModels = TRUE, verbose=FALSE, 
                           max.depth=20)
   )
-  print(seqTime)
 }
+
+print(seqTime)
+
 ```
 
 
@@ -197,18 +241,37 @@ if(file.exists(str_c(working_path, "hw4/miceObj1.RData"))){
 5. Make imputation diagnostic plots and explain what they mean.
 
 **Q1.5 Solution**
+Here is the reference for MICE [diagnostic plotting](https://cran.r-project.org/web/packages/miceRanger/vignettes/diagnosticPlotting.html).
 
+The distribution plots contain the imputed distributions compared to the original distributions for the continuous variables. The distributions of the imputed values (black lines) look pretty similar relative to distribution of the original values (red lines). 
 ```{r}
-# https://cran.r-project.org/web/packages/miceRanger/vignettes/diagnosticPlotting.html
-
-#Distribution of imputed values 
 plotDistributions(miceObj,vars='allNumeric')
+```
 
-#Convergence of correlation 
+&nbsp; 
+
+The boxplots of the correlations between imputed values in every combination of datasets at each iteration show how values between datasets converged over the iterations. We didn't see much convergence towards higher correlations among the variables, but this may be due to the max depth limitations placed on the MICE algorithm.
+```{r}
 plotCorrelations(miceObj,vars='allNumeric')
+```
 
+&nbsp; 
+
+The trace plots show the center and dispersion convergence. It seems that most means and standard deviations converge towards similar values after 5 iterations for the three imputed datasets with the exception of heart rate, temperature fahrenheit, respiratory rate, non_invasive systolic blood pressure, and non-invasive mean blood pressure. 
+```{r}
 #Center and Dispersion Convergence
-plotVarConvergence(miceObj,vars='allNumeric')
+colnames(icu_cohort_filtered)
+plotVarConvergence(miceObj,vars=c("bicarbonate", "calcium", 
+                                  "chloride"))
+
+plotVarConvergence(miceObj,vars=c("creatinine", "glucose", 
+                                  "magnesium", "potassium"))
+plotVarConvergence(miceObj,vars=c("sodium", "hematocrit", "wbc", 
+                                  "heart_rate"))
+plotVarConvergence(miceObj,vars=c("non_invasive_blood_pressure_systolic", 
+                                  "non_invasive_blood_pressure_mean", 
+                                  "respiratory_rate", 
+                                  "temperature_fahrenheit"))
 ```
 
 ### Part 6
@@ -217,13 +280,13 @@ plotVarConvergence(miceObj,vars='allNumeric')
 
 **Q1.6 Solution**
 
-We will use `quiet` to supress the output to speed up the dataframe combining process.
+The function `quiet` is used to supress the output to speed up the dataframe combining process.
 
 ```{r}
 #Obtain imputed datasets
 quiet(imputedList <- completeData(miceObj))
 
-#Convert categorical variables to numeric to find means 
+#Convert categorical variables to numeric 
 quiet(imputedList$Dataset_1$marital_status <- 
   unclass(imputedList$Dataset_1$marital_status))
 
@@ -251,9 +314,6 @@ quiet(imputedList$Dataset_2$died_within_30_days <-
 quiet(imputedList$Dataset_3$died_within_30_days <- 
   as.numeric(imputedList$Dataset_3$died_within_30_days))
 
-
-
-
 #Average data sets
 quiet(
   icu_cohort_filtered_imputed <- 
@@ -275,7 +335,8 @@ icu_cohort_filtered_imputed$died_within_30_days <- factor(
   icu_cohort_filtered_imputed$died_within_30_days)
 
 #Remove subject_id variable now
-icu_cohort_filtered_imputed <- subset(icu_cohort_filtered_imputed, select = -c(subject_id))
+icu_cohort_filtered_imputed <- 
+  subset(icu_cohort_filtered_imputed, select = -c(subject_id))
 ```
 
 
@@ -295,13 +356,13 @@ Develop at least two analytic approaches for predicting the 30-day mortality of 
 
 **Q2.1 Solution**
 
-First let's tabulate the 30-day mortality status variable.
+First, let's tabulate the 30-day mortality status variable to see the frequencies. About 90.2% did not died within 30 days of ICU admission and 9.8% died within 30 days of ICU admission.
 ```{r}
 table(icu_cohort_filtered_imputed$died_within_30_days)/
   nrow(icu_cohort_filtered_imputed)
 ```
 
-We will stratify the partioning according to these prevalences of 30-day mortality status. We will use `split_train_test` from the `healthcareai` package to accomplish this. 
+We will stratify the partioning according to these frequencies of 30-day mortality status. We will use `split_train_test` from the `healthcareai` package to accomplish this. 
 
 ```{r}
 partitioned_data<-split_train_test(d=icu_cohort_filtered_imputed, 
@@ -321,7 +382,7 @@ test <- partitioned_data$test
 
 #### Logistic regression with lasso penalty
 
-We will use `glmnet()` to perform this analysis. First, we need to do some data preparation. We will use `model.matrix()` to create a matrix of predictors with categorical variables one-hot-encoded. Categorical variables need to be one-hot-encoded to work for `glmnet()`. Reference for my code can be found here: http://www.sthda.com/english/articles/36-classification-methods-essentials/149-penalized-logistic-regression-essentials-in-r-ridge-lasso-and-elastic-net/
+We will use `glmnet()` to perform this analysis. First, we need to do some data preparation. We will use `model.matrix()` to create a matrix of predictors with categorical variables one-hot-encoded. Categorical variables need to be one-hot-encoded to work for `glmnet()`. Reference for my code can be found [here](http://www.sthda.com/english/articles/36-classification-methods-essentials/149-penalized-logistic-regression-essentials-in-r-ridge-lasso-and-elastic-net/)
 
 ```{r}
 #Dummy code categorical predictor variables
@@ -332,7 +393,7 @@ y<-train$died_within_30_days
 ```
 
 
-Now we can computed the penalized logistic regression. First we'll find the best lambda value to minimuze the cross_validation error. The lambda that minimizes the prediction error is $\lambda_{min}$ = 0.0002973709. However, [literature](https://stats.stackexchange.com/questions/138569/why-is-lambda-within-one-standard-error-from-the-minimum-is-a-recommended-valu) sugggests using the lambda within one standard error from the minimum as it gives the simplest model. The calculated lambda within one standard error is $\lambda_{1se}$ = 0.004846405
+Now we can computed the penalized logistic regression. First, we'll find the best lambda value to minimuze the cross_validation error. The lambda that minimizes the prediction error is $\lambda_{min}$ = 0.0002962146. However, [literature](https://stats.stackexchange.com/questions/138569/why-is-lambda-within-one-standard-error-from-the-minimum-is-a-recommended-valu) sugggests using the lambda within one standard error from the minimum becuase it gives the simplest model. The calculated lambda within one standard error is $\lambda_{1se}$ = 0.004827559
 ```{r}
 set.seed(1)
 cv.lasso <- cv.glmnet(x, y, alpha=1, family = "binomial")
@@ -347,11 +408,12 @@ cv.lasso$lambda.1se
 
 **Lambda that minimizes prediction error** 
 
-We first use the lambda value that minimizes the prediction error. 
+Let's try using the lambda value that minimizes the prediction error first. 
 
 ```{r}
 #Fit model on training data
-model_min <- glmnet(x, y, family= "binomial", alpha=1, lambda=cv.lasso$lambda.min)
+model_min <- glmnet(x, y, family= "binomial", 
+                    alpha=1, lambda=cv.lasso$lambda.min)
 ```
 
 Now we can make predictions on the test data.
@@ -376,11 +438,12 @@ Using $\lambda_{min}$ gives an accuracy of 90.5%.
 
 **Lambda that is one standard error from the minimum**
 
-We first use the lambda value that minimizes the prediction error. 
+Now let's use the lambda value that minimizes the prediction error. 
 
 ```{r}
 #Fit model on training data
-model_1se <- glmnet(x, y, family= "binomial", alpha=1, lambda=cv.lasso$lambda.1se)
+model_1se <- glmnet(x, y, family= "binomial", 
+                    alpha=1, lambda=cv.lasso$lambda.1se)
 ```
 
 Now we can make predictions on the test data.
@@ -410,7 +473,7 @@ coef(model_1se)
 ```
 
 &nbsp; 
-&nbsp; s
+&nbsp; 
 &nbsp; 
 &nbsp; 
 
@@ -418,19 +481,72 @@ coef(model_1se)
 
 Let's attempt to use random forests to classify patients to a 30-day mortality status. 
 
-Note: 3/4 left off on trying to see if there's a way to grid search for the optimal parameters. Need to see how to interpret what I'm doing as well
 ```{r}
 # Clear memory first
 
 #Garbage collection to clear memory
 gc()
 
-rm(model_min, model_1se, probab)
+#Remove all objects that are not needed
+quiet(rm(list=setdiff(ls(), c("working_path", "icu_cohort_filtered_imputed", 
+                              "test", "train"))))
 ```
 
+Let's use a tuning algorithm to find the optimal `mtry` parameters for `randomForest()`. The `mtry` parameter sets the number of variables randomly sampled as candidates at each split. The following code is courtesy of (Pham Dinh khanh)[https://rstudio-pubs-static.s3.amazonaws.com/389752_a0e0b14d14ea40ba8a7729fbd59cd5b5.html]. 
+
+&nbsp;
+
+First, let's use a grid search to find the best `mtry` parameter to use.
+
+```{r load randomforest_mtry , include=FALSE, cache.lazy=FALSE}
+if(file.exists(str_c(working_path, "hw4/randomforest_mtry.RData"))){
+  load(str_c(working_path, "hw4/randomforest_mtry.RData"))
+} else{
+  #Create control function for training with 10 folds and keep 3 folds for training. search method is grid.
+control <- trainControl(method='repeatedcv', 
+                        number=10, 
+                        repeats=3, 
+                        search='grid')
+#create tunegrid with 15 values from 1:15 for mtry to tunning model. Our train function will change number of entry variable at each split according to tunegrid. 
+tunegrid <- expand.grid(.mtry = (1:15)) 
+
+  rf_gridsearch <- train(died_within_30_days ~ ., 
+                         data = train,
+                         method = 'rf',
+                         metric = 'Accuracy',
+                         tuneGrid = tunegrid)
+
+}
+
+
+print(rf_gridsearch)
+```
+
+&nbsp;
+
+The grid search points to `mtry=5` as the value that optimzes the model. The `ntree` parameter does not have to be tuned. ["Tuning the number of trees is unnecessary; instead, simply set the number of trees to a large, computationally feasible number, and let the asymptotic behavior of LLN do the rest."](https://stats.stackexchange.com/questions/348245/do-we-have-to-tune-the-number-of-trees-in-a-random-forest). So we can proceed with the default parameter of `ntree=500`, as this saves computational power and memory. 
+
+```{r include = FALSE, message=FALSE}
+#Run random forest algorithm
+if(exists("mortalitystatus_train")){
+} else{
+mortalitystatus_train <- randomForest(died_within_30_days~., data=train, 
+                                      ntree=500, mtry=5, importance=TRUE)
+}
+```
+
+
+After the model is evaluated on the testing data set, we can see that we have a 90.9% accuracy! This is pretty good and only slightly better than the logistic regression with lasso penalty algorithm.  
+```{r message=FALSE}
+#Evaluate the model
+prediction <-predict(mortalitystatus_train, test)
+confusionMatrix(prediction, test$died_within_30_days)
+```
+
+We can see the variable importance as follows. The variable importance seems to suggest that the model may better predict 30-day mortality status where we see negative variable importance. 
 
 ```{r}
-mortalitystatus_train <- randomForest(died_within_30_days~., data=train, 
-                                      ntree=5000, importance=TRUE)
-
+randomForest::importance(mortalitystatus_train)
 ```
+
+In conclusion, either logistic regression with lasso penalty or random forests can be used to predict the 30-day mortality status of the patients in the ICU cohort with 90%+ accuracy.
