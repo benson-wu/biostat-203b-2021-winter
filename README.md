@@ -1,3 +1,3 @@
-# biostat-203b-2021-winter
+# UCLA BIOSTAT 203B Winter 2021
 
-This is a repository for BIOSTAT 203B for Winter 2021. 
+Class materials can be found on Dr. Hua Zhou's [course website](https://ucla-biostat203b-2021winter.github.io/schedule/schedule.html)
